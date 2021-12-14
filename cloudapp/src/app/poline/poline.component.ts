@@ -27,12 +27,12 @@ export class POlineComponent implements OnInit, OnDestroy {
     private appService: AppService,
     private restService: CloudAppRestService,
     private eventsService: CloudAppEventsService,
-    private toastr: ToastrService,
+   // private toastr: ToastrService,
     private alert: AlertService ) { }
 
   ngOnInit() {
     this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
-    this.appService.setTitle('PO-line select');
+    this.appService.setTitle('Select PO-lines and press Delete Selected');
   }
 
   ngOnDestroy(): void {
@@ -110,7 +110,7 @@ export class POlineComponent implements OnInit, OnDestroy {
       next: result => {
         let jsonResultAsString =  JSON.stringify(result);
         let parsedToJSON = JSON.parse(jsonResultAsString);
-        this.toastr.success("Vendor: " + parsedToJSON.vendor.value + ",  "+ parsedToJSON.vendor.desc);
+        this.alert.success("Vendor: " + parsedToJSON.vendor.value + ",  "+ parsedToJSON.vendor.desc);
         this.apiResult = result;
         // this.refreshPage();
       },
@@ -135,7 +135,7 @@ export class POlineComponent implements OnInit, OnDestroy {
     this.restService.call(request).subscribe({ //TODO: FAILS
       next: result => {
         this.deletedEntities.push(id);
-        this.alert.success("Vendor is deleted: " + poLineString);
+        this.alert.success("Vendor is deleted: " + poLineString, { autoClose: false });
         this.refreshPage();
       },
       error: (e: RestErrorResponse) => {

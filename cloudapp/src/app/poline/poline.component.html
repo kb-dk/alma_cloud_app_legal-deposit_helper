@@ -3,7 +3,7 @@
         <button mat-flat-button color="secondary" [disabled]="selectedEntities.length==0" (click)="selectEntities.clear()">Clear</button>
     </div>
 </app-topmenu>
-<p>A total of <strong>{{ selectedEntities.length }}</strong> items have been selected.</p>
+<!--<p>A total of <strong>{{ selectedEntities.length }}</strong> items have been selected.</p>-->
 <div *ngIf="count == 0">Please navigate to a list.</div>
 <eca-select-entities #selectEntities
                      [(selected)]="selectedEntities"

@@ -11,5 +11,13 @@
          "popups": true,
          "modals": true
       }
+   },
+   "icon": {
+      "type": "font",
+      "value": "fa fa-university"
+   },
+   "fullscreen": {
+      "allow": true,
+      "open": false
    }
 }

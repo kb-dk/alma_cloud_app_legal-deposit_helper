@@ -4,6 +4,7 @@ import {
   CloudAppRestService, CloudAppEventsService, Request, HttpMethod,
   Entity, PageInfo, RestErrorResponse, AlertService
 } from '@exlibris/exl-cloudapp-angular-lib';
+import {VendorFields} from "./vendorFields";
 import {AppService} from "../app.service";
 import {ToastrService} from "ngx-toastr";
 
@@ -16,6 +17,7 @@ export class POlineComponent implements OnInit, OnDestroy {
   private count = 0;
   private pageLoad$: Subscription;
   private pageEntities: Entity[];
+  private foundVendors: VendorFields[] = new Array<VendorFields>();
   private _apiResult: any;
   private selectedEntities = new Array<Entity>();
   private deletedEntities = new Array<String>();
@@ -99,29 +101,7 @@ export class POlineComponent implements OnInit, OnDestroy {
     });
   }
 
-  private sendPoLineUpdateRequest(link: string, requestBody: any) {
-    let request: Request = {
-      url: link,
-      method: HttpMethod.PUT,
-      requestBody
-    };
-    this.restService.call(request).subscribe({
-      next: result => {
-        this.alert.success("PO-line updated")
-        this.apiResult = result;
-        this.refreshPage();
-      },
-      error: (e: RestErrorResponse) => {
-        this.alert.error('Failed to update data');
-        console.error(e);
-        this.loading = false;
-      }
-    });
-  }
-
   private sendGetRequest(entity: Entity) {
-    //TODO: work in progress
-    console.log("sendGetRequest -> Link: " + entity.link);
     let url = entity.link;
     let request: Request = {
       url: url,
@@ -130,7 +110,7 @@ export class POlineComponent implements OnInit, OnDestroy {
     this.restService.call(request).subscribe({
       next: result => {
         if(url.includes("po-lines")){
-          this.poLineStuff(result);
+          this.sendGetRequest_getBibPost(result);
         } else{
           this.apiResult = result;
         }
@@ -202,34 +182,7 @@ export class POlineComponent implements OnInit, OnDestroy {
     });
   }
 
-/*
-  private sendTestPoLineDelete(link: string) {
-    //TODO: work in progress
-    console.log("sendGetRequest -> Link: " + link);
-    let request: Request = {
-      url: link,
-      method: HttpMethod.GET
-    };
-    this.restService.call(request).subscribe({
-      next: result => {
-        let jsonResultAsString = JSON.stringify(result);
-        var parsedToJSON = JSON.parse(jsonResultAsString);
-        this.sendDeleteRequestString("");//update parser selv til JSON...
-        this.refreshPage();
-      },
-      error: (e: RestErrorResponse) => {
-        this.alert.error('Failed to get data from ' + link);
-        console.error(e);
-        this.loading = false;
-      },
-      complete: () => {
-        this.alert.error('Data OK from ' + link);
-      }
-    });
-  }
-*/
-
-  private poLineStuff(result) {
+  private sendGetRequest_getBibPost(result) {
     let jsonResultAsString = JSON.stringify(result);
     let parsedToJSON = JSON.parse(jsonResultAsString);
     let mmsId = parsedToJSON.resource_metadata.mms_id.value;//TODO: Bruges til at gafle felt 280b
@@ -243,103 +196,19 @@ export class POlineComponent implements OnInit, OnDestroy {
     // this.apiResult = result;
   }
 
-  private sendDeleteRequest(entity: Entity) {
-    let poLineString = "" + entity.description + ", Id: " + entity.id;
-    console.log(poLineString);
-    let id = entity.id;
-    let url = "/acq/po-lines/" + entity.id;
-    let request: Request = {
-      url: url,
-      method: HttpMethod.DELETE,
-      queryParams: {["reason"]:"LIBRARY_CANCELLED"}
-    };
-    console.log("Request: " + request);
-    this.restService.call(request).subscribe({
-      next: result => {
-        this.deletedEntities.push(id);
-        this.alert.success("PO-line is deleted: " + poLineString, { autoClose: false });
-        this.refreshPage();
-      },
-      error: (e: RestErrorResponse) => {
-        this.alert.error('Failed to delete PO-line: ' + poLineString);
-        console.error(e);
-        this.loading = false;
-      },
-      complete: () => {
-        this.alert.success("PO-lines deleted: " + this.deletedEntities.length + " Id's are: " + this.deletedEntities);
-      }
-    });
-  }
-  private RENAMEsendDeleteRequestString(entity: Entity ) {
-    //TODO: work in progress
-    console.log("sendGetRequest -> Link: " + entity.link);
+  private getPoLineDetailsAndCallDeletePoLine(entity: Entity ) {
     var request: Request = {
       url: entity.link,
       method: HttpMethod.GET
     };
     this.restService.call(request).subscribe({
       next: result => {
-        console.log("po-line data fundet")
         this.apiResult = result;
         let jsonResultAsString = JSON.stringify(result);
         let parsedToJSON = JSON.parse(jsonResultAsString);
         let poLineCode = parsedToJSON.number;
         let url = "/acq/po-lines/" + poLineCode;
-        var deleteRequest: Request = {
-          url: url,
-          method: HttpMethod.DELETE,
-          queryParams: {["reason"]:"LIBRARY_CANCELLED"}
-        };
-        console.log("DeleteUrl: " + url);
-        this.restService.call(deleteRequest).subscribe({
-          next: () => {
-            this.deletedEntities.push(poLineCode);
-            this.alert.success("PO-line is deleted: " + poLineCode, { autoClose: false });
-            this.refreshPage();
-          },
-          error: (e: RestErrorResponse) => {
-            this.alert.error('Failed to delete PO-line: ' + poLineCode);
-            console.error(e);
-            this.loading = false;
-          },
-          complete: () => {
-            this.alert.success("PO-lines deleted: " + this.deletedEntities.length + " Id's are: " + this.deletedEntities);
-          }
-        });
-
-
-
-        /*
-                let url = "/acq/po-lines/" + entityId;
-                let request2: Request = {
-                  url: url,
-                  method: HttpMethod.DELETE,
-                  queryParams: {["reason"]:"LIBRARY_CANCELLED"}
-                };
-                console.log("DeleteUrl: " + url);
-                this.restService.call(request).subscribe({
-                  next: result => {
-                    this.deletedEntities.push(entityId);
-                    this.alert.success("PO-line is deleted: " + entityId, { autoClose: false });
-                    this.refreshPage();
-                  },
-                  error: (e: RestErrorResponse) => {
-                    this.alert.error('Failed to delete PO-line: ' + entityId);
-                    console.error(e);
-                    this.loading = false;
-                  },
-                  complete: () => {
-                    this.alert.success("PO-lines deleted: " + this.deletedEntities.length + " Id's are: " + this.deletedEntities);
-                  }
-                });
-        */
-
-
-
-
-
-
-
+        this.deletePoLine(url, poLineCode);
         // this.refreshPage();
       },
       error: (e: RestErrorResponse) => {
@@ -351,15 +220,29 @@ export class POlineComponent implements OnInit, OnDestroy {
         this.alert.error('Data OK from ' + entity.link);
       }
     });
+  }
 
-
-
-
-
-
-
-
-
+  private deletePoLine(url: string, poLineCode) {
+    var deleteRequest: Request = {
+      url: url,
+      method: HttpMethod.DELETE,
+      queryParams: {["reason"]: "LIBRARY_CANCELLED"}
+    };
+    this.restService.call(deleteRequest).subscribe({
+      next: () => {
+        this.deletedEntities.push(poLineCode);
+        this.alert.success("PO-line is deleted: " + poLineCode, {autoClose: false});
+        this.refreshPage();
+      },
+      error: (e: RestErrorResponse) => {
+        this.alert.error('Failed to delete PO-line: ' + poLineCode);
+        console.error(e);
+        this.loading = false;
+      },
+      complete: () => {
+        this.alert.success("PO-lines deleted: " + this.deletedEntities.length + " Id's are: " + this.deletedEntities);
+      }
+    });
   }
 
   private tryParseJson(value: any) {
@@ -382,7 +265,7 @@ export class POlineComponent implements OnInit, OnDestroy {
   DeleteSelected() {
     this.deletedEntities = new Array<String>();
     this.selectedEntities.forEach(entity => {
-      this.RENAMEsendDeleteRequestString(entity);
+      this.getPoLineDetailsAndCallDeletePoLine(entity);
     })
   }
 
@@ -391,6 +274,42 @@ export class POlineComponent implements OnInit, OnDestroy {
       let link = entity.link;
       this.sendTestPoLineUpdate(link);
     })
+  }
+
+  search(value: string) {
+    console.log("Search" + value);
+    this.alert.success(value);
+    this.searchVendors(value);
+  }
+
+  private searchVendors(searchString: string ) {
+    let url = "/acq/vendors/";
+    let queryParamValue= "code~"+ searchString;
+
+    var request: Request = {
+      url: url,
+      method: HttpMethod.GET,
+      queryParams: {["q"]: queryParamValue}
+    };
+    this.restService.call(request).subscribe({
+      next: result => {
+        this.apiResult = result;
+        /*
+        let poLineCode = parsedToJSON.number;
+        let url = "/acq/po-lines/" + poLineCode;
+        this.deletePoLine(url, poLineCode);
+*/
+        // this.refreshPage();
+      },
+      error: (e: RestErrorResponse) => {
+        this.alert.error('Failed to get data from search: ' + searchString);
+        console.error(e);
+        this.loading = false;
+      },
+      complete: () => {
+        this.alert.error('Data OK from search: ' + searchString);
+      }
+    });
   }
 
 }

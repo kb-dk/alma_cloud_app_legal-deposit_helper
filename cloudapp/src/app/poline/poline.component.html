@@ -10,6 +10,23 @@
                      (count)="count=$event"
 >
 </eca-select-entities>
+
+<section>
+    <mat-card class="input-card">
+        <mat-card-header>
+            <mat-card-title>Indtast søgestreng</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <mat-label>Input</mat-label>
+            <input matInput #searchInput [value]="">
+        </mat-card-content>
+        <mat-card-actions>
+            <button mat-raised-button color="primary" (click)="search(searchInput.value)">Search</button>
+        </mat-card-actions>
+
+    </mat-card>
+</section>
+
 <mat-card-actions>
     <button mat-raised-button color="primary" (click)="DeleteSelected()"
     >Delete selected</button>

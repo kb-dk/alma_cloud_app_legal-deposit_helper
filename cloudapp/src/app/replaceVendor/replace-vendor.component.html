@@ -1,0 +1,100 @@
+<app-topmenu>
+    <div buttons>
+        <button mat-flat-button color="secondary" [disabled]="selectedEntities.length==0" (click)="selectEntities.clear()">Clear</button>
+    </div>
+</app-topmenu>
+
+
+<!--
+<form [formGroup]="myForm">
+    <div formArrayName="myOptionsArray">
+        <div *ngFor="let myOption of myOptionsArray.controls; let i = index">
+            <div formGroupName="{{ i }}">
+                <input type="checkbox" [formControl]="myOption.get('selected')" (change)="onCheckboxChange()" />
+                <label> {{ myOption.get('id').value }} </label>
+            </div>
+        </div>
+    </div>
+</form>
+-->
+
+
+
+
+<!--<p>A total of <strong>{{ selectedEntities.length }}</strong> items have been selected.</p>-->
+<div *ngIf="count == 0">Please navigate to a list.</div>
+<eca-select-entities #selectEntities
+                     [(selected)]="selectedEntities"
+                     (count)="count=$event"
+>
+</eca-select-entities>
+
+<section>
+    <mat-card class="input-card">
+        <mat-card-header>
+            <mat-card-title>Indtast søgestreng</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <mat-label>Input</mat-label>
+            <input matInput #searchInput [value]="">
+        </mat-card-content>
+        <mat-card-actions>
+            <button mat-raised-button color="primary" (click)="search(searchInput.value)">Search</button>
+        </mat-card-actions>
+
+    </mat-card>
+</section>
+
+
+<form [formGroup]="form" (ngSubmit)="submitJJ()" novalidate>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Index</th>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Link</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let vendorFields of foundVendors; let i=index">
+        <td><input type="radio" formArrayName="selectedCountries" [value]= "vendorFields.getCode()" (change)="onCheckboxChange(vendorFields.getCode())"/>{{i}}</td>
+        <td>{{ vendorFields.getCode() }}</td>
+        <td>{{ vendorFields.getName() }}</td>
+        <td>{{ vendorFields.getLink() }}</td>
+    </tr>
+    </tbody>
+</table>
+    <label><b>Selected new vendor: {{selectedNewVendorCode}}</b></label><br>
+    <button type="submit">Submit</button>
+</form>
+
+
+
+
+<mat-card-actions>
+    <button mat-raised-button color="primary" (click)="DeleteSelected()"
+    >Delete selected</button>
+    <button mat-raised-button color="secondary" (click)="ShowSelected()"
+    >Show selected</button>
+    <button mat-raised-button color="secondary" (click)="SetNewVendor()"
+    >Update Vendor</button>
+</mat-card-actions>
+
+<section>
+    <mat-card class="example-card">
+        <mat-card-header>
+            <mat-card-title>API Result</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <textarea #apiResultArea [value]="apiResult | json"></textarea>
+        </mat-card-content>
+        <mat-card-actions>
+            <button mat-raised-button color="primary" (click)="update(apiResultArea.value)"
+                    [disabled]="!hasApiResult || loading">Update</button>
+        </mat-card-actions>
+    </mat-card>
+</section>
+<div class="loading-shade" *ngIf="loading">
+    <mat-spinner diameter="50"></mat-spinner>
+</div>

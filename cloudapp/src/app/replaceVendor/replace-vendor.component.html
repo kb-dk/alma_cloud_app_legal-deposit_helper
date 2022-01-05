@@ -1,4 +1,4 @@
-<app-topmenu>
+<app-topmenu xmlns="http://www.w3.org/1999/html">
     <div buttons>
         <button mat-flat-button color="secondary" [disabled]="selectedEntities.length==0" (click)="selectEntities.clear()">Clear</button>
     </div>
@@ -36,7 +36,8 @@
         </mat-card-header>
         <mat-card-content>
             <mat-label>Input</mat-label>
-            <input matInput #searchInput [value]="">
+            <input matInput #searchInput [value]="vendorSearchString">
+            <mat-checkbox (change)="toggelVendorSearchPrefix($event)">Toggle prefix</mat-checkbox>
         </mat-card-content>
         <mat-card-actions>
             <button mat-raised-button color="primary" (click)="search(searchInput.value)">Search</button>
@@ -46,7 +47,7 @@
 </section>
 
 
-<form [formGroup]="form" (ngSubmit)="submitJJ()" novalidate>
+<form [formGroup]="form"  novalidate>
 <table class="table table-striped">
     <thead>
     <tr>
@@ -58,7 +59,7 @@
     </thead>
     <tbody>
     <tr *ngFor="let vendorFields of foundVendors; let i=index">
-        <td><input type="radio" formArrayName="selectedCountries" [value]= "vendorFields.getCode()" (change)="onCheckboxChange(vendorFields.getCode())"/>{{i}}</td>
+        <td><input type="radio" formArrayName="selectedCountries" [value]= "vendorFields.getCode()" (change)="onCheckboxChange(vendorFields)"/>{{i}}</td>
         <td>{{ vendorFields.getCode() }}</td>
         <td>{{ vendorFields.getName() }}</td>
         <td>{{ vendorFields.getLink() }}</td>
@@ -66,11 +67,8 @@
     </tbody>
 </table>
     <label><b>Selected new vendor: {{selectedNewVendorCode}}</b></label><br>
-    <button type="submit">Submit</button>
+    <button mat-raised-button color="primary" (click)="submitJJ()">Find 260B text</button>
 </form>
-
-
-
 
 <mat-card-actions>
     <button mat-raised-button color="primary" (click)="DeleteSelected()"

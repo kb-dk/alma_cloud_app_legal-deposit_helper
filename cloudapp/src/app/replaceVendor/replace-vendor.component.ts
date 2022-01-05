@@ -8,6 +8,7 @@ import {AppService} from "../app.service";
 import {ToastrService} from "ngx-toastr";
 import {VendorFields} from "../poline/vendorFields";
 import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
+import {MatCheckboxChange} from "@angular/material/checkbox";
 
 @Component({
   selector: 'app-replace-vendor',
@@ -23,6 +24,7 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   private selectedEntities = new Array<Entity>();
   private deletedEntities = new Array<String>();
   private selectedNewVendorCode = '';
+  private vendorSearchString = "Hej"
   form: FormGroup;
 
 
@@ -120,11 +122,7 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
     };
     this.restService.call(request).subscribe({
       next: result => {
-        if(url.includes("po-lines")){
-          this.sendGetRequest_getBibPost(result);
-        } else{
           this.apiResult = result;
-        }
         // this.refreshPage();
       },
       error: (e: RestErrorResponse) => {
@@ -134,6 +132,57 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+  private getPolineDetails(entity: Entity) {
+    let url = entity.link;
+    let request: Request = {
+      url: url,
+      method: HttpMethod.GET
+    };
+    this.restService.call(request).subscribe({
+      next: result => {
+          this.sendGetRequest_getBibPostNew(result);
+        // this.refreshPage();
+      },
+      error: (e: RestErrorResponse) => {
+        this.alert.error('getPolineDetails; Failed to get data');
+        console.error(e);
+        this.loading = false;
+      }
+    });
+  }
+
+  private sendGetBibPostFromLink(link: string) {
+    let request: Request = {
+      url: link,
+      method: HttpMethod.GET
+    };
+    this.restService.call(request).subscribe({
+      next: result => {
+        console.log("bibData fundet")
+        this.apiResult = result;
+        this.vendorSearchString = this.find260bText(result);
+      },
+      error: (e: RestErrorResponse) => {
+        this.alert.error('sendGetBibPostFromLink failed to get data');
+        console.error(e);
+        this.loading = false;
+      },
+      complete: () => {
+        this.alert.info('Data OK from ' + link);
+      }
+    });
+  }
+
+  private find260bText(bibData){
+    let jsonResultAsString = JSON.stringify(bibData);
+    var parsedToJSON = JSON.parse(jsonResultAsString);
+    let regExp = new RegExp("\<datafield.*tag\=\"260.*?\"b\"\>(.*?)\<\/subfield\>");//Find: <datafield....tag="260  -> Find first "b">GRAB FROM HERE UNTIL</subfield>
+    var field260b = regExp[Symbol.match](parsedToJSON.anies)[1];
+    console.log("Felt 260b: " + field260b);
+    return field260b;
+  }
+
 
   private sendGetRequestFromLink(link: string) {
     //TODO: work in progress
@@ -193,18 +242,11 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
     });
   }
 
-  private sendGetRequest_getBibPost(result) {
+  private sendGetRequest_getBibPostNew(result) {
     let jsonResultAsString = JSON.stringify(result);
     let parsedToJSON = JSON.parse(jsonResultAsString);
-    let mmsId = parsedToJSON.resource_metadata.mms_id.value;//TODO: Bruges til at gafle felt 280b
     let linkToBibPost = parsedToJSON.resource_metadata.mms_id.link;//TODO: Bruges til at gafle felt 280b
-    let mmsMessage = "MMS: " + mmsId + "  link: " + linkToBibPost;
-    this.alert.success(mmsMessage);
-    console.log(mmsMessage);
-    let vendorMessage = "Vendor: " + parsedToJSON.vendor.value + ",  " + parsedToJSON.vendor.desc;
-    this.alert.success(vendorMessage);
-    this.sendGetRequestFromLink(linkToBibPost)
-    // this.apiResult = result;
+    this.sendGetBibPostFromLink(linkToBibPost)
   }
 
   private getPoLineDetailsAndCallDeletePoLine(entity: Entity ) {
@@ -247,6 +289,14 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
       console.log(entity.id);
       console.log(entity.link);
       this.sendGetRequest(entity);
+    })
+  }
+
+  GetVendorFromSelectedPoline() {
+    this.selectedEntities.forEach(entity => {
+      console.log(entity.id);
+      console.log(entity.link);
+      this.getPolineDetails(entity);
     })
   }
 
@@ -311,9 +361,10 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   }
 
 
-  onCheckboxChange(code: string) {
-    this.alert.success(('checkbox changed' + code));
-    this.selectedNewVendorCode = code;
+  onCheckboxChange(vendorFields: VendorFields) {
+    this.alert.success(('checkbox changed' + vendorFields));
+    this.selectedNewVendorCode = vendorFields.getCode();
+    this.sendGetRequestFromLink(vendorFields.getLink().toString());
 
 
 /*
@@ -332,6 +383,18 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   }
 
   submitJJ() {
-
+    this.GetVendorFromSelectedPoline();
   }
+
+  toggelVendorSearchPrefix(matCheckbox: MatCheckboxChange) {
+    const prefix = "PLMO_";
+    if(matCheckbox.checked){
+      var isPrefixed = this.vendorSearchString.includes(prefix);
+      if(!isPrefixed){
+        this.vendorSearchString = prefix + this.vendorSearchString;
+      }
+    } else {
+      this.vendorSearchString = this.vendorSearchString.replace(prefix, "");
+    }
+   }
 }

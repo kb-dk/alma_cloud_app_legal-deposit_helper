@@ -15,6 +15,7 @@ import { POlineComponent } from "./poline/poline.component";
 import {TruncatePipe} from "./pipes/truncate.pipe";
 import {ReplaceVendorComponent} from "./replaceVendor/replace-vendor.component";
 import { ParallelComponent } from './parallel/parallel.component';
+import { SettingsComponent } from './settings/settings.component';
 
 
 @NgModule({
@@ -27,6 +28,7 @@ import { ParallelComponent } from './parallel/parallel.component';
     ReplaceVendorComponent,
     ConfirmationDialog,
     ParallelComponent,
+    SettingsComponent,
   ],
   imports: [
     MaterialModule,

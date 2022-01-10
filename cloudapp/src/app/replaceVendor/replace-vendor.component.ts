@@ -9,6 +9,8 @@ import {ToastrService} from "ngx-toastr";
 import {VendorFields} from "../poline/vendorFields";
 import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
 import {MatCheckboxChange} from "@angular/material/checkbox";
+import {MatRadioChange} from "@angular/material/radio";
+import * as url from "url";
 
 @Component({
   selector: 'app-replace-vendor',
@@ -19,17 +21,25 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   private count = 0;
   private pageLoad$: Subscription;
   private pageEntities: Entity[];
-  private foundVendors = new Array<VendorFields>();
+  private foundVendors = new Array<VendorFields>(); //data,der vises i tabel
+  private noVendorsFoundText= "No vendors found. Please change search criterion and try again ";
+  private vendorsFound = false;
+  private showSearchVendorResult= false;
+
+
   private _apiResult: any;
   private selectedEntities = new Array<Entity>();
-  private deletedEntities = new Array<String>();
-  private selectedNewVendorCode = '';
-  private vendorSearchString = "Hej"
-  form: FormGroup;
-
-
+  private selectedNewVendorLink: url = '';
+  private vendorSearchString = ""
+  private showPoLines = true;
+  poLineForm: FormGroup;
+  vendorsForm: FormGroup;
   hasApiResult: boolean = false;
   loading = false;
+  private selectedPoLine: Entity;
+  private selectedVendorType: string = "";
+  private polineDetails: any;
+  private newVendorDetailsJson: any;
 
   constructor(
     private appService: AppService,
@@ -40,11 +50,14 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.form = this.formBuilder.group({
+    this.poLineForm = this.formBuilder.group({
+      selectedCountries:  new FormArray([])
+    });
+    this.vendorsForm = this.formBuilder.group({
       selectedCountries:  new FormArray([])
     });
     this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
-    this.appService.setTitle('Select PO-lines and press Delete Selected');
+    this.appService.setTitle('Change PO-line vendor');
   }
 
   ngOnDestroy(): void {
@@ -67,20 +80,17 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
       this.restService.call(entity.link).subscribe(result => this.apiResult = result);
     } else {
       this.apiResult = {};
-      this.pageEntities.forEach(tmpEntity =>{
-        console.log('Loading pageEntity: ' + tmpEntity.id);
-      })
     }
   }
 
-  update(value: any) {
+  update(value: any) {//TODO: RequestBody er der ikke styr på.
     this.loading = true;
     let requestBody = this.tryParseJson(value);
     if (!requestBody) {
       this.loading = false;
       return this.alert.error('Failed to parse json');
     }
-    this.sendUpdateRequest(requestBody);
+    this.sendUpdateRequest(requestBody, this.selectedPoLine);
   }
 
   refreshPage = () => {
@@ -95,9 +105,11 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
     });
   }
 
-  private sendUpdateRequest(requestBody: any) {
+
+  //kaldes med poLine og opdaterer vendor ud fra requestBody
+  private sendUpdateRequest(requestBody: any, selectedPoLine: Entity,  ) {
     let request: Request = {
-      url: this.pageEntities[0].link,
+      url: selectedPoLine.link,
       method: HttpMethod.PUT,
       requestBody
     };
@@ -141,6 +153,7 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
     };
     this.restService.call(request).subscribe({
       next: result => {
+          this.polineDetails = result;
           this.sendGetRequest_getBibPostNew(result);
         // this.refreshPage();
       },
@@ -159,7 +172,6 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
     };
     this.restService.call(request).subscribe({
       next: result => {
-        console.log("bibData fundet")
         this.apiResult = result;
         this.vendorSearchString = this.find260bText(result);
       },
@@ -169,7 +181,7 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
         this.loading = false;
       },
       complete: () => {
-        this.alert.info('Data OK from ' + link);
+        // this.alert.info('Felt 260B hentet til søgefelt');
       }
     });
   }
@@ -186,14 +198,12 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
 
   private sendGetRequestFromLink(link: string) {
     //TODO: work in progress
-    console.log("sendGetRequest -> Link: " + link);
     let request: Request = {
       url: link,
       method: HttpMethod.GET
     };
     this.restService.call(request).subscribe({
       next: result => {
-        console.log("bibData fundet")
           this.apiResult = result;
         // this.refreshPage();
       },
@@ -203,41 +213,36 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
         this.loading = false;
       },
       complete: () => {
-        this.alert.error('Data OK from ' + link);
+        this.alert.info('1. Data OK from ' + link);
       }
     });
   }
 
-  private sendTestPoLineUpdate(link: string) {
+  private sendTestPoLineUpdate() {
     //TODO: work in progress
-    console.log("sendGetRequest -> Link: " + link);
     let request: Request = {
-      url: link,
+      url: this.selectedPoLine.link,
       method: HttpMethod.GET
     };
     this.restService.call(request).subscribe({
       next: result => {
-        let jsonResultAsString = JSON.stringify(result);
-        var parsedToJSON = JSON.parse(jsonResultAsString);
-        var vendorMessage = "Vendor: " + parsedToJSON.vendor.value + ",  " + parsedToJSON.vendor.desc + "  Account: " + parsedToJSON.vendor_account;
-        console.log("FØR: " +vendorMessage);
-        parsedToJSON.vendor.value = "1AAKS";
-        parsedToJSON.vendor.desc = "Aalborg Kommune";
-        parsedToJSON.vendor_account = "1AAKS";
-        vendorMessage = "Vendor: " + parsedToJSON.vendor.value + ",  " + parsedToJSON.vendor.desc + "  Account: " + parsedToJSON.vendor_account;
-        console.log("EFTER: " +vendorMessage);
-        let updatedJson = JSON.stringify(parsedToJSON);
-        console.log('updatedJson: ' +updatedJson);
+        let polineJsonResultAsString = JSON.stringify(result);
+        var polineDetailsParsedToJSON = JSON.parse(polineJsonResultAsString);
+        var vendorMessage = "Vendor: " + polineDetailsParsedToJSON.vendor.value + ",  " + polineDetailsParsedToJSON.vendor.desc + "  Account: " + polineDetailsParsedToJSON.vendor_account;
+        polineDetailsParsedToJSON.vendor.value = this.newVendorDetailsJson.code;
+        polineDetailsParsedToJSON.vendor.desc = this.newVendorDetailsJson.name;
+        polineDetailsParsedToJSON.vendor_account = this.newVendorDetailsJson.account[0].code;
+        let updatedJson = JSON.stringify(polineDetailsParsedToJSON);
         this.update(updatedJson);//update parser selv til JSON...
-        this.refreshPage();
+//        this.refreshPage();TODO: Skal det ske???
       },
       error: (e: RestErrorResponse) => {
-        this.alert.error('Failed to get data from ' + link);
+        this.alert.error('Failed to get vendorDetails ');
         console.error(e);
         this.loading = false;
       },
       complete: () => {
-        this.alert.error('Data OK from ' + link);
+        this.alert.error('2 Data OK from vendorDetails');
       }
     });
   }
@@ -270,7 +275,29 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
         this.loading = false;
       },
       complete: () => {
-        this.alert.error('Data OK from ' + entity.link);
+        this.alert.error('3. Data OK from ' + entity.link);
+      }
+    });
+  }
+
+  private getNewVendorDetails(link: url) {
+    var request: Request = {
+      url: link.toString(),
+      method: HttpMethod.GET
+    };
+    this.restService.call(request).subscribe({
+      next: result => {
+        this.apiResult = result;
+        const vendorDetailsResultAsString = JSON.stringify(result);
+        this.newVendorDetailsJson = JSON.parse(vendorDetailsResultAsString);
+      },
+      error: (e: RestErrorResponse) => {
+        this.alert.error('Failed to get data from ' + link);
+        console.error(e);
+        this.loading = false;
+      },
+      complete: () => {
+        this.alert.error('3. Data OK from ' + link);
       }
     });
   }
@@ -286,115 +313,109 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
 
   ShowSelected() {
     this.selectedEntities.forEach(entity => {
-      console.log(entity.id);
-      console.log(entity.link);
       this.sendGetRequest(entity);
     })
   }
 
   GetVendorFromSelectedPoline() {
     this.selectedEntities.forEach(entity => {
-      console.log(entity.id);
-      console.log(entity.link);
       this.getPolineDetails(entity);
     })
   }
 
 
   SetNewVendor() {
-    this.selectedEntities.forEach(entity => {
-      let link = entity.link;
-      this.sendTestPoLineUpdate(link);
-    })
+      this.sendTestPoLineUpdate();
   }
 
-  search(value: string) {
-    console.log("Search" + value);
-    this.alert.success(value);
-    this.searchVendors(value);
+  search(vendorNameSearchString: string) {
+    this.showSearchVendorResult = true;
+    this.searchVendors(vendorNameSearchString, '1LR');
   }
 
-  private searchVendors(searchString: string ) {
+  private searchVendors(vendorNameSearchString: string, vendorType: string ) {
     this.foundVendors = new Array<VendorFields>();
+    this.vendorsFound = false;
     let url = "/acq/vendors/";
-    let queryParamValue= "code~"+ searchString;
-
+    let queryParamValue= "name~"+vendorNameSearchString;
+    // let queryParamValue= "code~1LR%20AND%20name~Ringhof";
+    // let queryParamValue= "name~Ringhof"; OK
+    // let queryParamValue= "code~1LR";     OK
+    console.log('searchVendors: queryparam: ' + queryParamValue);
     var request: Request = {
       url: url,
       method: HttpMethod.GET,
-      queryParams: {["q"]: queryParamValue}
+      queryParams: {
+        ["q"]: queryParamValue,
+        ["limit"]: 100
+      }
     };
-    console.log("JJ request: " + request);
     this.restService.call(request).subscribe({
       next: result => {
-        console.log("result: " + result);
         this.apiResult = result;
-//        this.foundVendors = result;
         let jsonResultAsString = JSON.stringify(result);
         let parsedToJSON = JSON.parse(jsonResultAsString);
-        console.log(parsedToJSON);//OK
-        for (let i = 0; i < parsedToJSON.vendor.length; i++) {
-          let tempVendorFields = new VendorFields(parsedToJSON.vendor[i].code, parsedToJSON.vendor[i].name, parsedToJSON.vendor[i].link);
-          console.log("Hvad er foundVendors?: " + this.foundVendors);
-          this.foundVendors[i]=tempVendorFields;
-          console.log("foundVendor; " + this.foundVendors[i].getCode());
-          console.log(parsedToJSON.vendor[i].code + "  " + parsedToJSON.vendor[i].name);
-          console.log("Hvad er foundVendors NU?: " + this.foundVendors);
+        const total_record_count = parseInt(parsedToJSON.total_record_count);
+        const mandatoryVendorCodeSubstring = "1CE";
+        if(total_record_count > 0){
+          let foundVendorsCounter = 0;
+          for (let i = 0; i < parsedToJSON.vendor.length; i++) {
+            const tmpVendorCode = parsedToJSON.vendor[i].code;
+            console.log("tmpVendorCode: " + tmpVendorCode);
+            if(tmpVendorCode.includes(mandatoryVendorCodeSubstring)){
+              let tempVendorFields = new VendorFields(tmpVendorCode, parsedToJSON.vendor[i].name, parsedToJSON.vendor[i].link);
+              this.foundVendors[foundVendorsCounter]=tempVendorFields;
+              this.vendorsFound = true;
+              console.log("Fundet");
+              foundVendorsCounter++;
+            }
+          }
         }
-        console.log("Antal foundVendors: " + this.foundVendors.length )
-        /*
-        let poLineCode = parsedToJSON.number;
-        let url = "/acq/po-lines/" + poLineCode;
-        this.deletePoLine(url, poLineCode);
-*/
-        // this.refreshPage();
+        if(this.vendorsFound) {
+          console.log(this.foundVendors.length + " vendors found");
+        }else {
+          console.log("No vendors Found");
+        }
       },
       error: (e: RestErrorResponse) => {
-        this.alert.error('Failed to get data from search: ' + searchString);
+        this.alert.error('Failed to get data from search: ' + vendorNameSearchString);
         console.error(e);
         this.loading = false;
       },
       complete: () => {
-        this.alert.error('Data OK from search: ' + searchString);
+        // this.alert.info('4. Data OK from search: ' + searchString);
       }
     });
-  }
-
-
-  onCheckboxChange(vendorFields: VendorFields) {
-    this.alert.success(('checkbox changed' + vendorFields));
-    this.selectedNewVendorCode = vendorFields.getCode();
-    this.sendGetRequestFromLink(vendorFields.getLink().toString());
-
-
-/*
-    if (event.target.) {
-      selectedCountries.push(new FormControl(event.target.value));
-    } else {
-      const index = selectedCountries.controls
-          .findIndex(x => x.value === event.target.value);
-      selectedCountries.removeAt(index);
-    }
-*/
-  }
-
-  DeleteSelected() {
-
   }
 
   submitJJ() {
     this.GetVendorFromSelectedPoline();
   }
 
-  toggelVendorSearchPrefix(matCheckbox: MatCheckboxChange) {
-    const prefix = "PLMO_";
-    if(matCheckbox.checked){
-      var isPrefixed = this.vendorSearchString.includes(prefix);
-      if(!isPrefixed){
-        this.vendorSearchString = prefix + this.vendorSearchString;
-      }
-    } else {
-      this.vendorSearchString = this.vendorSearchString.replace(prefix, "");
-    }
-   }
+  vendorSelected($event: MatRadioChange, link: url) {
+    this.selectedNewVendorLink = link;
+    this.getNewVendorDetails(link)
+    console.log("vendorSelected: " + link);
+  }
+
+  poLineSelected($event: MatRadioChange, entity: Entity) {
+    this.selectedPoLine = entity;
+    console.log("PoLine selected: " + entity.description);
+    this.getPolineDetails(entity);
+    this.showPoLines = false;
+  }
+
+  clear() {
+    this.showPoLines = true;
+    this.vendorSearchString = "";
+    this.selectedPoLine = null;
+    this.foundVendors = new Array<VendorFields>();
+    this.selectedVendorType = "";
+    this.showSearchVendorResult = false;
+  }
+
+  vendorTypeSelected($event: MatRadioChange, typeName: string) {
+      console.log("vendorTypeSelected: " + typeName);
+      this.selectedVendorType = typeName;
+  }
 }

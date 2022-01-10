@@ -2,6 +2,9 @@
    "id": "legal-deposit-helper",
    "title": "Legal Deposit helper",
    "description": "Introducing functionality for handling Legal Deposits using standart Claims and Orders",
+   "pages": {
+      "settings": "/#/settings"
+   },
    "contentSecurity": {
       "connectSrc": [
          "https://catalog.hathitrust.org/",

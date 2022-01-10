@@ -2,7 +2,7 @@ import { Subscription } from 'rxjs';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import {
   CloudAppRestService, CloudAppEventsService, Request, HttpMethod,
-  Entity, PageInfo, RestErrorResponse, AlertService
+  Entity, PageInfo, RestErrorResponse, AlertService, CloudAppSettingsService
 } from '@exlibris/exl-cloudapp-angular-lib';
 import {AppService} from "../app.service";
 import {ToastrService} from "ngx-toastr";
@@ -11,6 +11,7 @@ import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
 import {MatCheckboxChange} from "@angular/material/checkbox";
 import {MatRadioChange} from "@angular/material/radio";
 import * as url from "url";
+import {Settings} from "../models/settings";
 
 @Component({
   selector: 'app-replace-vendor',
@@ -40,13 +41,16 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   private selectedVendorType: string = "";
   private polineDetails: any;
   private newVendorDetailsJson: any;
+  private settings: Settings;
 
   constructor(
     private appService: AppService,
     private restService: CloudAppRestService,
     private eventsService: CloudAppEventsService,
     private formBuilder: FormBuilder,
-    private alert: AlertService ) {
+    private alert: AlertService,
+    private settingsService: CloudAppSettingsService,
+  ) {
   }
 
   ngOnInit() {
@@ -58,6 +62,9 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
     });
     this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
     this.appService.setTitle('Change PO-line vendor');
+    this.settingsService.get().subscribe(settings => {
+      this.settings = settings as Settings;
+    });
   }
 
   ngOnDestroy(): void {
@@ -356,7 +363,7 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
         let jsonResultAsString = JSON.stringify(result);
         let parsedToJSON = JSON.parse(jsonResultAsString);
         const total_record_count = parseInt(parsedToJSON.total_record_count);
-        const mandatoryVendorCodeSubstring = "1CE";
+        const mandatoryVendorCodeSubstring = this.settings.vendorMandatorySubstring;
         if(total_record_count > 0){
           let foundVendorsCounter = 0;
           for (let i = 0; i < parsedToJSON.vendor.length; i++) {

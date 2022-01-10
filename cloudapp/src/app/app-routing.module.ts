@@ -4,11 +4,13 @@ import { MainComponent } from './main/main.component';
 import {POlineComponent} from "./poline/poline.component";
 import {ReplaceVendorComponent} from "./replaceVendor/replace-vendor.component";
 import {ParallelComponent} from "./parallel/parallel.component";
+import {SettingsComponent} from "./settings/settings.component";
 
 const routes: Routes = [
   { path: '', component: MainComponent },
   { path: 'app-poline', component: POlineComponent },
   { path: 'app-replace-vendor', component: ReplaceVendorComponent },
+  { path: 'settings', component: SettingsComponent },
   { path: 'app-parallel', component: ParallelComponent },
 ];
 

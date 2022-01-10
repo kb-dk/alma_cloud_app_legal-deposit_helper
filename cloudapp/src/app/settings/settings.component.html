@@ -1,1 +1,30 @@
-<p>settings works!</p>
+<app-topmenu>
+    <div buttons>
+        <button mat-flat-button type="button" color="primary" (click)="save()" [disabled]="!(form?.dirty)">Save</button>
+    </div>
+</app-topmenu>
+<div class="loading-shade" *ngIf="saving">
+    <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
+</div>
+<div *ngIf="form">
+    <form [formGroup]="form">
+        <section class="settings-section">
+            <mat-checkbox labelPosition="after" formControlName="showPoLine">Show PoLines after select:</mat-checkbox>
+        </section>
+        <section class="settings-section">
+            <mat-form-field appearance="fill">
+                <label class="example-margin">Mandatory vendor substring:</label>
+                <input matInput formControlName="vendorMandatorySubstring">
+            </mat-form-field>
+        </section>
+        <section class="settings-section">
+            <label class="example-margin">Search vendor limit: </label><br>
+            <mat-radio-group formControlName="numberOfFoundVendors">
+                <mat-radio-button class="settings-control" [value]="10">10</mat-radio-button>
+                <mat-radio-button class="settings-control" [value]="20">20</mat-radio-button>
+                <mat-radio-button class="settings-control" [value]="50">50</mat-radio-button>
+            </mat-radio-group>
+        </section>
+    </form>
+    <pre *ngIf="form.get('showPoLine').value">{{ form.value | json }}</pre>
+</div>

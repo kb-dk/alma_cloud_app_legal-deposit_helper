@@ -1,106 +1,108 @@
 <app-topmenu xmlns="http://www.w3.org/1999/html">
     <div buttons>
-        <button mat-flat-button color="secondary" [disabled]="pageEntities.length==0" (click)="clear()">Clear</button>
+        <button mat-flat-button color="secondary" [disabled]="pageEntities == 0" (click)="clear()">Clear</button>
     </div>
 </app-topmenu>
 
+<div class="loading-shade" *ngIf="pageLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+</div>
 
-<div *ngIf="pageEntities == 0">Please navigate to a list.</div>
+<div *ngIf="!pageLoading">
+    <div *ngIf="pageEntities == 0">Please navigate to a list.</div>
+    <div *ngIf="(pageEntities.length>0) && showPoLines">
+        <div *ngIf="showAllPolines; else showFilteredPolines" ><!-- If NO PoLineFilter is present in Settings -->
+            <section>
+                <mat-card class="input-card">
+                    <mat-card-header>
+                        <mat-card-title>Please select PoLine for changing vendor</mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <form [formGroup]="poLineForm" novalidate>
+                            <mat-radio-group>
+                                <div *ngFor="let tmpEntity of pageEntities; let i=index">
+                                    <mat-radio-button (change)="poLineSelected($event, tmpEntity)" [value]="tmpEntity.link">{{ tmpEntity.description| truncate : 40}}</mat-radio-button>
+                                </div>
+                            </mat-radio-group>
+                        </form>
+                    </mat-card-content>
+                </mat-card>
+            </section>
+        </div>
+        <ng-template #showFilteredPolines><!-- If PoLineFilter is present in Settings -->
+            <section>
+                <mat-card class="input-card">
+                    <mat-card-header>
+                        <mat-card-title>Please select PoLine for changing vendor.</mat-card-title>
+                        <mat-card-subtitle>PoLines are filter by vendor name from Settings: '<b class="bold-weight large">{{settings.polineVendorNameFilter}}</b>'.</mat-card-subtitle>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <form [formGroup]="poLineForm" novalidate>
+                            <mat-radio-group>
+                                <div *ngFor="let tmpEntity of filteredPolines; let i=index">
+                                    <mat-radio-button (change)="poLineSelected($event, tmpEntity)" [value]="tmpEntity.link">{{ tmpEntity.description| truncate : 40}}</mat-radio-button>
+                                </div>
+                            </mat-radio-group>
+                        </form>
+                    </mat-card-content>
+                </mat-card>
+            </section>
+        </ng-template>
+    </div>
 
-<div *ngIf="(pageEntities.length>0) && showPoLines" >
-    <section>
+    <div *ngIf="selectedPoLine">
+        <section>
+            <mat-card class="input-card">
+                <h3>Selected PoLine: <b>{{selectedPoLine.description | truncate: 35}}</b></h3>
+                <mat-card-header>
+                    <mat-card-title>Click 'Search' (Change search string and vendor-type selection if necessary)</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                    <mat-label>Search criteria: </mat-label>
+                    <input matInput #searchInput [value]="vendorSearchString">
+                    <br><mat-radio-group class="cdk-visually-hidden">
+                        <mat-label class="cdk-visually-hidden">Vendor-type: </mat-label>
+                        <mat-radio-button (change)="vendorTypeSelected($event, 'PLIGT')" value="PLIGT">PLIGT</mat-radio-button>
+                        <mat-radio-button (change)="vendorTypeSelected($event, 'AV')" value="AV">AV</mat-radio-button>
+                        <mat-radio-button (change)="vendorTypeSelected($event, '')" value="" checked="checked">All</mat-radio-button>
+                    </mat-radio-group>
+                </mat-card-content>
+                <mat-card-actions>
+                    <button mat-raised-button color="primary" (click)="search(searchInput.value)">Search</button>
+                </mat-card-actions>
+            </mat-card>
+        </section>
+    </div>
+
+    <section *ngIf="showSearchVendorResult">
         <mat-card class="input-card">
             <mat-card-header>
-                <mat-card-title>Please select PoLine for changing vendor</mat-card-title>
+                <mat-card-title *ngIf="vendorsFound; else noVendorsFoundHeader"><b>Please select a vendor followed by clicking 'Replace Vendor' at the bottom.</b><br> Alternatively alter your searchcriteria.</mat-card-title>
+                <ng-template  #noVendorsFoundHeader>
+                    <mat-card-title>{{noVendorsFoundText}}</mat-card-title>
+                </ng-template>
             </mat-card-header>
-            <mat-card-content>
-                <form [formGroup]="poLineForm" novalidate>
+            <mat-card-subtitle *ngIf="vendorSearchLimitExceeded" class="bold-weight"><b>More than {{settings.vendorSearchLimit}} vendors found! Consider altering your searchcriteria.</b></mat-card-subtitle>
+            <mat-card-subtitle *ngIf="(this.settings.vendorCodeFilter && this.settings.vendorCodeFilter.length > 0)">Vendor Code of search result is filtered with '<b class="bold-weight large">{{settings.vendorCodeFilter}}</b>'. This can be changed in 'Settings'.</mat-card-subtitle>
+            <mat-card-content *ngIf="foundVendors.length>0">
+                <form [formGroup]="vendorsForm" novalidate>
                     <mat-radio-group>
-                        <div *ngFor="let tmpEntity of pageEntities; let i=index">
-                            <mat-radio-button (change)="poLineSelected($event, tmpEntity)" [value]="tmpEntity.link">{{ tmpEntity.description| truncate : 45}}</mat-radio-button>
+                        <div *ngFor="let vendorFields of foundVendors; let i=index">
+                            <mat-radio-button (change)="vendorSelected($event, vendorFields.getLink())" [value]="vendorFields.getCode()">{{ vendorFields.getName() }}</mat-radio-button>
                         </div>
                     </mat-radio-group>
                 </form>
             </mat-card-content>
-        </mat-card>
-    </section>
-    <!--
-        <mat-card-actions *ngIf="selectedNewVendorCode!==''">
-            <button mat-raised-button color="secondary" (click)="SetNewVendor()">Update Vendor</button>
-        </mat-card-actions>
-    -->
-</div>
-
-<div *ngIf="selectedPoLine">
-    <section>
-        <mat-card class="input-card">
-            <h3>Selected PoLine: <b>{{selectedPoLine.description | truncate: 35}}</b></h3>
-            <mat-card-header>
-                <mat-card-title>Click 'Search' (Change search string and vendor-type selection if necessary)</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-                <mat-label>Search String: </mat-label>
-                <input matInput #searchInput [value]="vendorSearchString">
-                <br><mat-radio-group>
-                <mat-label>Vendor-type: </mat-label>
-                <mat-radio-button (change)="vendorTypeSelected($event, 'PLIGT')" value="PLIGT">PLIGT</mat-radio-button>
-                    <mat-radio-button (change)="vendorTypeSelected($event, 'AV')" value="AV">AV</mat-radio-button>
-                    <mat-radio-button (change)="vendorTypeSelected($event, '')" value="" checked="checked">All</mat-radio-button>
-                </mat-radio-group>
-            </mat-card-content>
-            <mat-card-actions>
-                <button mat-raised-button color="primary" (click)="search(searchInput.value)">Search</button>
-                <button mat-raised-button color="secondary" (click)="ShowSelected()">Show selected POline</button>
+            <mat-card-actions *ngIf="selectedNewVendorLink!==''">
+                <button mat-raised-button color="primary" (click)="SetNewVendor()">Replace Vendor</button>
+                <!--        <button mat-raised-button color="secondary" (click)="DeleteSelected()">Delete selected</button>-->
             </mat-card-actions>
+            <p *ngIf="selectedNewVendorLink!==''">PoLine: <b>{{selectedPoLine.description | truncate: 35}}</b></p>
         </mat-card>
     </section>
 </div>
 
-<section *ngIf="showSearchVendorResult">
-    <mat-card class="input-card">
-        <mat-card-header>
-            <mat-card-title *ngIf="!vendorsFound; else vendorsFoundHeader">{{noVendorsFoundText}}</mat-card-title>
-            <ng-template  #vendorsFoundHeader>
-                <mat-card-title>Select vendor and click 'Replace Vendor or Search again'</mat-card-title>
-            </ng-template>
-        </mat-card-header>
-        <mat-card-content *ngIf="foundVendors.length>0">
-            <form [formGroup]="vendorsForm" novalidate>
-                <mat-radio-group>
-                    <div *ngFor="let vendorFields of foundVendors; let i=index">
-                        <mat-radio-button (change)="vendorSelected($event, vendorFields.getLink())" [value]="vendorFields.getCode()">{{ vendorFields.getName() }}</mat-radio-button>
-                    </div>
-                </mat-radio-group>
-            </form>
-        </mat-card-content>
-        <mat-card-actions *ngIf="selectedNewVendorLink!==''">
-            <button mat-raised-button color="primary" (click)="SetNewVendor()">Replace Vendor</button>
-            <!--        <button mat-raised-button color="secondary" (click)="DeleteSelected()">Delete selected</button>-->
-        </mat-card-actions>
-        <p *ngIf="selectedNewVendorLink!==''">PoLine: <b>{{selectedPoLine.description | truncate: 35}}</b></p>
-    </mat-card>
-</section>
-
-
-
-
-
-<!--<div *ngIf="noVendorsFound"><h3><b>{{noVendorsFoundText}}</b></h3></div>-->
-<!--<div *ngIf="foundVendors.length>0">-->
-<!--    <form [formGroup]="vendorsForm" novalidate>-->
-<!--        <mat-radio-group>-->
-<!--            <div *ngFor="let vendorFields of foundVendors; let i=index">-->
-<!--                <mat-radio-button (change)="vendorSelected($event, vendorFields.getCode())" [value]="vendorFields.getCode()">{{ vendorFields.getName() }}</mat-radio-button>-->
-<!--            </div>-->
-<!--        </mat-radio-group>-->
-<!--    </form>-->
-<!--    <mat-card-actions *ngIf="selectedNewVendorCode!==''">-->
-<!--        <button mat-raised-button color="primary" (click)="SetNewVendor()">Replace Vendor</button>-->
-<!--&lt;!&ndash;        <button mat-raised-button color="secondary" (click)="DeleteSelected()">Delete selected</button>&ndash;&gt;-->
-<!--    </mat-card-actions>-->
-<!--</div>-->
-<!--<div els></div>-->
-
+<!--
 <section>
     <mat-card class="example-card">
         <mat-card-header>
@@ -115,6 +117,4 @@
         </mat-card-actions>
     </mat-card>
 </section>
-<div class="loading-shade" *ngIf="loading">
-    <mat-spinner diameter="50"></mat-spinner>
-</div>
+-->

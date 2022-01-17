@@ -1,6 +1,7 @@
 <app-topmenu>
     <div buttons>
         <button mat-flat-button type="button" color="primary" (click)="save()" [disabled]="!(form?.dirty)">Save</button>
+<!--        <button mat-flat-button type="button" color="primary" (click)="remove()">Remove all settings</button> -->
     </div>
 </app-topmenu>
 <div class="loading-shade" *ngIf="saving">
@@ -8,23 +9,35 @@
 </div>
 <div *ngIf="form">
     <form [formGroup]="form">
-        <section class="settings-section">
-            <mat-checkbox labelPosition="after" formControlName="showPoLine">Show PoLines after select:</mat-checkbox>
-        </section>
-        <section class="settings-section">
-            <mat-form-field appearance="fill">
-                <label class="example-margin">Mandatory vendor substring:</label>
-                <input matInput formControlName="vendorMandatorySubstring">
-            </mat-form-field>
-        </section>
-        <section class="settings-section">
-            <label class="example-margin">Search vendor limit: </label><br>
-            <mat-radio-group formControlName="numberOfFoundVendors">
-                <mat-radio-button class="settings-control" [value]="10">10</mat-radio-button>
-                <mat-radio-button class="settings-control" [value]="20">20</mat-radio-button>
-                <mat-radio-button class="settings-control" [value]="50">50</mat-radio-button>
-            </mat-radio-group>
-        </section>
+        <mat-card class="input-card">
+            <mat-card-header>
+                <mat-card-title>Order line - replace vendor</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <label>The vendor code of found vendors must contain (vendorcode filter string):</label><br>
+                <section class="settings-section">
+                    <mat-form-field appearance="fill">
+                        <mat-label class="example-margin"></mat-label>
+                        <input matInput formControlName="vendorCodeFilter">
+                    </mat-form-field>
+                </section>
+                <label>PoLines vendordesc must include (PoLine filter string):</label><br>
+                <section class="settings-section">
+                    <mat-form-field appearance="fill">
+                        <mat-label class="example-margin"></mat-label>
+                        <input matInput formControlName="polineVendorNameFilter">
+                    </mat-form-field>
+                </section>
+                <label>Search vendor limit: </label><br>
+                <section class="settings-section">
+                    <mat-radio-group formControlName="vendorSearchLimit">
+                        <mat-radio-button class="settings-control" [value]="10">10</mat-radio-button>
+                        <mat-radio-button class="settings-control" [value]="20">20</mat-radio-button>
+                        <mat-radio-button class="settings-control" [value]="50">50</mat-radio-button>
+                    </mat-radio-group>
+                </section>
+            </mat-card-content>
+        </mat-card>
     </form>
-    <pre *ngIf="form.get('showPoLine').value">{{ form.value | json }}</pre>
+<!--    <pre>{{ form.value | json }}</pre>-->
 </div>

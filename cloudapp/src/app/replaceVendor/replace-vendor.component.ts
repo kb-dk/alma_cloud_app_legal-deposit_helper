@@ -12,6 +12,8 @@ import {MatCheckboxChange} from "@angular/material/checkbox";
 import {MatRadioChange} from "@angular/material/radio";
 import * as url from "url";
 import {Settings} from "../models/settings";
+import {CloudAppOutgoingEvents} from "@exlibris/exl-cloudapp-angular-lib/lib/events/outgoing-events";
+import settings = CloudAppOutgoingEvents.settings;
 
 @Component({
   selector: 'app-replace-vendor',
@@ -22,6 +24,7 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   private count = 0;
   private pageLoad$: Subscription;
   private pageEntities: Entity[];
+  private filteredPolines: Entity[];
   private foundVendors = new Array<VendorFields>(); //data,der vises i tabel
   private noVendorsFoundText= "No vendors found. Please change search criterion and try again ";
   private vendorsFound = false;
@@ -32,16 +35,17 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   private selectedEntities = new Array<Entity>();
   private selectedNewVendorLink: url = '';
   private vendorSearchString = ""
-  private showPoLines = true;
+  private showPoLines = true; //Styrer om poline vises/skjules
+  private showAllPolines: boolean = false; //Skal alle polines vises eller kun polines filtreret på settings name
   poLineForm: FormGroup;
   vendorsForm: FormGroup;
   hasApiResult: boolean = false;
-  loading = false;
+  pageLoading = false;
   private selectedPoLine: Entity;
-  private selectedVendorType: string = "";
   private polineDetails: any;
   private newVendorDetailsJson: any;
   private settings: Settings;
+  private vendorSearchLimitExceeded: boolean = false;
 
   constructor(
     private appService: AppService,
@@ -54,16 +58,30 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.poLineForm = this.formBuilder.group({
-      selectedCountries:  new FormArray([])
-    });
-    this.vendorsForm = this.formBuilder.group({
-      selectedCountries:  new FormArray([])
-    });
-    this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
+    this.pageLoading = true;
     this.appService.setTitle('Change PO-line vendor');
+    this.initFormGroups();
+    this.initSettings();
+  }
+
+  private initSettings() {
     this.settingsService.get().subscribe(settings => {
       this.settings = settings as Settings;
+      if (this.settings.polineVendorNameFilter && this.settings.polineVendorNameFilter.length > 0) {
+        this.showAllPolines = false;
+      } else {
+        this.showAllPolines = true;
+      }
+      this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
+    });
+  }
+
+  private initFormGroups() {
+    this.poLineForm = this.formBuilder.group({
+      selectedCountries: new FormArray([])
+    });
+    this.vendorsForm = this.formBuilder.group({
+      selectedCountries: new FormArray([])
     });
   }
 
@@ -81,34 +99,39 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   }
 
   onPageLoad = (pageInfo: PageInfo) => {
+    this.filteredPolines = [];
     this.pageEntities = pageInfo.entities;
-    if ((pageInfo.entities || []).length == 1) {
-      const entity = pageInfo.entities[0];
-      this.restService.call(entity.link).subscribe(result => this.apiResult = result);
-    } else {
-      this.apiResult = {};
+    if(this.settings.polineVendorNameFilter && this.settings.polineVendorNameFilter.length > 0){ //if vendorName filter is defined in "Settings"
+      pageInfo.entities.forEach(tmpEntity => {
+        this.filterPolineUsingVendorName(tmpEntity);
+      })
+      this.pageLoading = false;
+    } else { //If the two lines surrounding this are combined things will mess up!
+      this.pageLoading = false;
     }
+    this.apiResult = {};
   }
 
   update(value: any) {//TODO: RequestBody er der ikke styr på.
-    this.loading = true;
+    this.pageLoading = true;
     let requestBody = this.tryParseJson(value);
+    // console.log("requestBody value: " + value); //logging the updated PoLine details
     if (!requestBody) {
-      this.loading = false;
+      this.pageLoading = false;
       return this.alert.error('Failed to parse json');
     }
     this.sendUpdateRequest(requestBody, this.selectedPoLine);
   }
 
   refreshPage = () => {
-    this.loading = true;
+    this.pageLoading = true;
     this.eventsService.refreshPage().subscribe({
       next: () => this.alert.success('Success!'),
       error: e => {
         console.error(e);
         this.alert.error('Failed to refresh page');
       },
-      complete: () => this.loading = false
+      complete: () => this.pageLoading = false
     });
   }
 
@@ -126,13 +149,14 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
         this.refreshPage();
       },
       error: (e: RestErrorResponse) => {
-        this.alert.error('Failed to update data');
-        console.error(e);
-        this.loading = false;
+        this.alert.error(e.message.split(";")[0]);
+        console.error("PoLine Link: " + selectedPoLine.link + ' ErrorMessage: ' + e.message.split(";")[0]);
+        this.pageLoading = false;
       }
     });
   }
 
+/*
   private sendGetRequest(entity: Entity) {
     let url = entity.link;
     let request: Request = {
@@ -151,6 +175,7 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
       }
     });
   }
+*/
 
   private getPolineDetails(entity: Entity) {
     let url = entity.link;
@@ -167,7 +192,31 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
       error: (e: RestErrorResponse) => {
         this.alert.error('getPolineDetails; Failed to get data');
         console.error(e);
-        this.loading = false;
+        this.pageLoading = false;
+      }
+    });
+  }
+
+  private filterPolineUsingVendorName(entity: Entity) {
+    let url = entity.link;
+    let request: Request = {
+      url: url,
+      method: HttpMethod.GET
+    };
+    this.restService.call(request).subscribe({
+      next: result => {
+          var polineDetailsString = JSON.stringify(result);
+          var polineDetailsParsedToJSON = JSON.parse(polineDetailsString);
+          var vendorMessage = "Vendor: " + polineDetailsParsedToJSON.vendor.desc;
+          if(polineDetailsString.includes(this.settings.polineVendorNameFilter)){
+            this.filteredPolines.push(entity);
+          }
+        // this.refreshPage();TODO ??
+      },
+      error: (e: RestErrorResponse) => {
+        this.alert.error('getPolineDetails; Failed to get data');
+        console.error(e);
+        this.pageLoading = false;
       }
     });
   }
@@ -185,7 +234,7 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
       error: (e: RestErrorResponse) => {
         this.alert.error('sendGetBibPostFromLink failed to get data');
         console.error(e);
-        this.loading = false;
+        this.pageLoading = false;
       },
       complete: () => {
         // this.alert.info('Felt 260B hentet til søgefelt');
@@ -198,7 +247,6 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
     var parsedToJSON = JSON.parse(jsonResultAsString);
     let regExp = new RegExp("\<datafield.*tag\=\"260.*?\"b\"\>(.*?)\<\/subfield\>");//Find: <datafield....tag="260  -> Find first "b">GRAB FROM HERE UNTIL</subfield>
     var field260b = regExp[Symbol.match](parsedToJSON.anies)[1];
-    console.log("Felt 260b: " + field260b);
     return field260b;
   }
 
@@ -217,7 +265,7 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
       error: (e: RestErrorResponse) => {
         this.alert.error('Failed to get data from ' + link);
         console.error(e);
-        this.loading = false;
+        this.pageLoading = false;
       },
       complete: () => {
         this.alert.info('1. Data OK from ' + link);
@@ -246,10 +294,10 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
       error: (e: RestErrorResponse) => {
         this.alert.error('Failed to get vendorDetails ');
         console.error(e);
-        this.loading = false;
+        this.pageLoading = false;
       },
       complete: () => {
-        this.alert.error('2 Data OK from vendorDetails');
+        //this.alert.error('2 Data OK from vendorDetails');
       }
     });
   }
@@ -279,10 +327,10 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
       error: (e: RestErrorResponse) => {
         this.alert.error('Failed to get data from ' + entity.link);
         console.error(e);
-        this.loading = false;
+        this.pageLoading = false;
       },
       complete: () => {
-        this.alert.error('3. Data OK from ' + entity.link);
+        // this.alert.error('3. Data OK from ' + entity.link);
       }
     });
   }
@@ -301,10 +349,10 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
       error: (e: RestErrorResponse) => {
         this.alert.error('Failed to get data from ' + link);
         console.error(e);
-        this.loading = false;
+        this.pageLoading = false;
       },
       complete: () => {
-        this.alert.error('3. Data OK from ' + link);
+        // this.alert.error('A. Data OK from ' + link);
       }
     });
   }
@@ -316,12 +364,6 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
       console.error(e);
     }
     return undefined;
-  }
-
-  ShowSelected() {
-    this.selectedEntities.forEach(entity => {
-      this.sendGetRequest(entity);
-    })
   }
 
   GetVendorFromSelectedPoline() {
@@ -336,19 +378,18 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   }
 
   search(vendorNameSearchString: string) {
+    this.pageLoading = true;
+    this.vendorSearchString = vendorNameSearchString;
     this.showSearchVendorResult = true;
-    this.searchVendors(vendorNameSearchString, '1LR');
+    this.vendorSearchLimitExceeded = false;
+    this.searchVendors(vendorNameSearchString);
   }
 
-  private searchVendors(vendorNameSearchString: string, vendorType: string ) {
+  private searchVendors(vendorNameSearchString: string) {
     this.foundVendors = new Array<VendorFields>();
     this.vendorsFound = false;
     let url = "/acq/vendors/";
     let queryParamValue= "name~"+vendorNameSearchString;
-    // let queryParamValue= "code~1LR%20AND%20name~Ringhof";
-    // let queryParamValue= "name~Ringhof"; OK
-    // let queryParamValue= "code~1LR";     OK
-    console.log('searchVendors: queryparam: ' + queryParamValue);
     var request: Request = {
       url: url,
       method: HttpMethod.GET,
@@ -363,33 +404,40 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
         let jsonResultAsString = JSON.stringify(result);
         let parsedToJSON = JSON.parse(jsonResultAsString);
         const total_record_count = parseInt(parsedToJSON.total_record_count);
-        const mandatoryVendorCodeSubstring = this.settings.vendorMandatorySubstring;
+        const vendorCodeFilter = this.settings.vendorCodeFilter;
         if(total_record_count > 0){
           let foundVendorsCounter = 0;
           for (let i = 0; i < parsedToJSON.vendor.length; i++) {
             const tmpVendorCode = parsedToJSON.vendor[i].code;
             console.log("tmpVendorCode: " + tmpVendorCode);
-            if(tmpVendorCode.includes(mandatoryVendorCodeSubstring)){
+            if(((!vendorCodeFilter||vendorCodeFilter.length===0) || tmpVendorCode.toLowerCase().includes(vendorCodeFilter.toLowerCase())) && this.foundVendors.length < this.settings.vendorSearchLimit){
               let tempVendorFields = new VendorFields(tmpVendorCode, parsedToJSON.vendor[i].name, parsedToJSON.vendor[i].link);
               this.foundVendors[foundVendorsCounter]=tempVendorFields;
               this.vendorsFound = true;
-              console.log("Fundet");
               foundVendorsCounter++;
             }
           }
         }
-        if(this.vendorsFound) {
-          console.log(this.foundVendors.length + " vendors found");
-        }else {
+        if(vendorCodeFilter && this.vendorsFound) {
+          if(this.foundVendors.length >= this.settings.vendorSearchLimit){
+            this.vendorSearchLimitExceeded = true;
+          }
+        } else if(this.vendorsFound){
+          if(parsedToJSON.vendor.length === 100){
+            this.vendorSearchLimitExceeded = true;
+          }
+        }
+        if(!this.vendorsFound){
           console.log("No vendors Found");
         }
       },
       error: (e: RestErrorResponse) => {
         this.alert.error('Failed to get data from search: ' + vendorNameSearchString);
         console.error(e);
-        this.loading = false;
+        this.pageLoading = false;
       },
       complete: () => {
+        this.pageLoading = false;
         // this.alert.info('4. Data OK from search: ' + searchString);
       }
     });
@@ -402,12 +450,10 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   vendorSelected($event: MatRadioChange, link: url) {
     this.selectedNewVendorLink = link;
     this.getNewVendorDetails(link)
-    console.log("vendorSelected: " + link);
   }
 
   poLineSelected($event: MatRadioChange, entity: Entity) {
     this.selectedPoLine = entity;
-    console.log("PoLine selected: " + entity.description);
     this.getPolineDetails(entity);
     this.showPoLines = false;
   }
@@ -417,12 +463,11 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
     this.vendorSearchString = "";
     this.selectedPoLine = null;
     this.foundVendors = new Array<VendorFields>();
-    this.selectedVendorType = "";
     this.showSearchVendorResult = false;
   }
 
-  vendorTypeSelected($event: MatRadioChange, typeName: string) {
-      console.log("vendorTypeSelected: " + typeName);
-      this.selectedVendorType = typeName;
+  vendorTypeSelected($event: MatRadioChange, av: string) {
+    //TODO: form is fucking up if no formGroupElement is present.
   }
+
 }

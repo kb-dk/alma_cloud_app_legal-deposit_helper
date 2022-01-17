@@ -1,5 +1,5 @@
 export class Settings {
-    showPoLine: boolean = false;
-    numberOfFoundVendors: number = 10;
-    vendorMandatorySubstring:string = "";
+    vendorSearchLimit: number = 10;
+    vendorCodeFilter:string = "";
+    polineVendorNameFilter: string = "";//Import af Bogfortegnelsen fra DBC
 }

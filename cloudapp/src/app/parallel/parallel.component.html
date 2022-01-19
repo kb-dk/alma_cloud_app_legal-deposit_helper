@@ -1,16 +1,61 @@
 <app-topmenu>
     <div buttons>
-        <button mat-flat-button type="button" color="secondary" (click)="clear()">Clear</button>
-        <button mat-flat-button type="button" color="primary" (click)="run()">Retrieve users</button>
+        <button mat-flat-button type="button" color="secondary" (click)="refreshPage()">Refresh</button>
+<!--        <button mat-flat-button type="button" color="secondary" (click)="clear()">Clear</button>-->
+<!--        <button mat-flat-button type="button" color="primary" (click)="run()">Retrieve users</button>-->
     </div>
 </app-topmenu>
 
+
+<mat-card>
+    <mat-card-header>
+        <mat-card-title>Please select PoLines to cancel</mat-card-title>
+        <mat-card-subtitle>PoLine allready having status '<b class="bold-weight">CANCELLED</b>' are not shown!</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+        <form [formGroup]="allPolinesForm" (ngSubmit)="onSubmit()">
+            <div formArrayName="allPolines">
+                <div *ngFor="let allPoLine of allPolines().controls; let allPolinesIndex=index">
+                    <div class="selectPoline" [formGroupName]='allPolinesIndex'>
+                        <button class="linkButton" (click)="removeFromAllPoLine(allPolinesIndex)">Select</button>{{getAllPolineDescription(allPolinesIndex)| truncate : 40}}
+                    </div>
+                </div>
+            </div>
+        </form>
+    </mat-card-content>
+</mat-card>
+<br>
+<mat-card *ngIf="deletePolines().length>0">
+    <mat-card-header>
+        <mat-card-title>Selected PoLines</mat-card-title>
+        <mat-card-subtitle>Deselect or click 'Cancel Selected'</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+        <form [formGroup]="deletePolinesForm" (ngSubmit)="onSubmit()">
+            <div formArrayName="deletePolines">
+                <div *ngFor="let deletePoline of deletePolines().controls; let deletePolinesIndex=index">
+                    <div class="selectPoline" [formGroupName]='deletePolinesIndex'>
+                        <button class="linkButton" (click)="undoRemoveFromAllPoLine(deletePolinesIndex)">Deselect</button>{{getDeletePolineDescription(deletePolinesIndex)| truncate : 40}}
+                    </div>
+                </div>
+            </div>
+        </form>
+    </mat-card-content>
+    <mat-card-actions>
+        <button  mat-raised-button color="primary" (click)="cancelSelectedPolines()">Cancel Selected</button>
+    </mat-card-actions>
+</mat-card>
+
+
+<!--{{this.allPolinesForm.value | json}}-->
+
+<!--
 <form [formGroup]="myForm">
     <div formArrayName="myOptionsArray">
         <div *ngFor="let myOption of myOptionsArray.controls; let i = index">
             <div formGroupName="{{ i }}">
-                <input type="checkbox" [formControl]="myOption.get('selected')" (change)="onCheckboxChange()" />
-                <label> {{ myOption.get('name').value }} </label>
+                <input type="checkbox" [formControl]="myOption.get('selected')" (change)="onCheckboxChange(myOption)" />
+                <label> {{ myOption.get('name').value }} {{ myOption.get('link').value }} </label>
             </div>
         </div>
     </div>
@@ -70,3 +115,4 @@
         <strong>{{ id }}</strong>
     </li>
 </ul>
+-->

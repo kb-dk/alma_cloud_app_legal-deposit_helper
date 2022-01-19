@@ -1,0 +1,15 @@
+button.linkButton{
+  background: none!important;
+  border: none;
+  padding: 0 1em 0 0!important;
+  /*optional*/
+  font-family: arial, sans-serif;
+  /*input has OS specific font-family*/
+  color: #069;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+div.selectPoline {
+  padding: 2px 0;
+}

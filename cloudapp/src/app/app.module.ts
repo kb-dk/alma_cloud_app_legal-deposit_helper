@@ -16,6 +16,7 @@ import {TruncatePipe} from "./pipes/truncate.pipe";
 import {ReplaceVendorComponent} from "./replaceVendor/replace-vendor.component";
 import { ParallelComponent } from './parallel/parallel.component';
 import { SettingsComponent } from './settings/settings.component';
+import { JjComponent } from './jj/jj.component';
 
 
 @NgModule({
@@ -29,6 +30,7 @@ import { SettingsComponent } from './settings/settings.component';
     ConfirmationDialog,
     ParallelComponent,
     SettingsComponent,
+    JjComponent,
   ],
   imports: [
     MaterialModule,

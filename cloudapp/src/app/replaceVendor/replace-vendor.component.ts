@@ -205,6 +205,15 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
     };
     this.restService.call(request).subscribe({
       next: result => {
+/*       TODO: Denne kode bør kunne erstatte det JSON-gymnastik
+               CHECK FOR NULL
+          const polineDetails = result;
+          const polineDesc = polineDetails.vendor.desc;
+          if(polineDesc.includes(this.settings.polineVendorNameFilter)){
+            this.filteredPolines.push(entity);
+          }
+*/
+
           var polineDetailsString = JSON.stringify(result);
           var polineDetailsParsedToJSON = JSON.parse(polineDetailsString);
           var vendorMessage = "Vendor: " + polineDetailsParsedToJSON.vendor.desc;

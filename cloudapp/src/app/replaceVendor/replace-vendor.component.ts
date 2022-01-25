@@ -24,6 +24,7 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   private count = 0;
   private pageLoad$: Subscription;
   private pageEntities: Entity[];
+  private pageIsShowingPolines: boolean = false;
   private filteredPolines: Entity[];
   private foundVendors = new Array<VendorFields>(); //data,der vises i tabel
   private noVendorsFoundText= "No vendors found. Please change search criterion and try again ";
@@ -101,15 +102,20 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   onPageLoad = (pageInfo: PageInfo) => {
     this.filteredPolines = [];
     this.pageEntities = pageInfo.entities;
-    if(this.settings.polineVendorNameFilter && this.settings.polineVendorNameFilter.length > 0){ //if vendorName filter is defined in "Settings"
-      pageInfo.entities.forEach(tmpEntity => {
-        this.filterPolineUsingVendorName(tmpEntity);
-      })
-      this.pageLoading = false;
-    } else { //If the two lines surrounding this are combined things will mess up!
-      this.pageLoading = false;
+    if(this.pageEntities.length>0 && this.pageEntities[0].link.toString().includes('/acq/po-lines')) {
+      this.pageIsShowingPolines = true;
+      if(this.settings.polineVendorNameFilter && this.settings.polineVendorNameFilter.length > 0){ //if vendorName filter is defined in "Settings"
+        pageInfo.entities.forEach(tmpEntity => {
+          this.filterPolineUsingVendorName(tmpEntity);
+        })
+        this.pageLoading = false;
+      } else { //If the two lines surrounding this are combined things will mess up!
+        this.pageLoading = false;
+      }
+      this.apiResult = {};
+    } else {
+      this.pageIsShowingPolines = false;
     }
-    this.apiResult = {};
   }
 
   update(value: any) {//TODO: RequestBody er der ikke styr på.
@@ -375,7 +381,7 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
     return undefined;
   }
 
-  GetVendorFromSelectedPoline() {
+  getVendorFromSelectedPoline() {
     this.selectedEntities.forEach(entity => {
       this.getPolineDetails(entity);
     })
@@ -453,7 +459,7 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   }
 
   submitJJ() {
-    this.GetVendorFromSelectedPoline();
+    this.getVendorFromSelectedPoline();
   }
 
   vendorSelected($event: MatRadioChange, link: url) {
@@ -463,7 +469,11 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
 
   poLineSelected($event: MatRadioChange, entity: Entity) {
     this.selectedPoLine = entity;
-    this.getPolineDetails(entity);
+    if(this.settings.searchUsingBib260B){
+      this.getPolineDetails(entity);
+    }else{
+      this.vendorSearchString = '';
+    }
     this.showPoLines = false;
   }
 

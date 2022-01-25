@@ -11,6 +11,7 @@ import { map, catchError, switchMap, tap } from 'rxjs/operators';
 import {of, forkJoin, Observable, Subscription} from 'rxjs';
 import { AppService } from '../app.service';
 import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup} from "@angular/forms";
+import {JjComponent} from "../jj/jj.component";
 
 @Component({
   selector: 'app-parallel',
@@ -18,133 +19,38 @@ import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup} from "@
   styleUrls: ['./parallel.component.scss']
 })
 export class ParallelComponent implements OnInit {
+  private REMOVE_STATUSES = ['CANCELLED', 'CLOSED'];
   private allPolinesForm: FormGroup;
   private deletePolinesForm: FormGroup;
-  users: any[];
-  usersNotLoaded: string[];
   poLineProcessed = 0;
-  polinesNotLoaded: Entity[];
   private polinesNumberOfErrors: 0;
-  selectedFormControls = [];
-  num = 10;
   loading = false;
-  processed = 0;
-  showProgress = false;
-  numberOfErrors: 0;
-  private altNumberOfErrors: 0;
-  myForm: FormGroup;
   private pageLoad$: Subscription;
   private pageEntities: Entity[];
+  private pageIsShowingPolines: boolean = false;
+  private poLineDetails: any[] =[];//All polineDetails objects.
+  private deletedOK: string[] = [];
+  private deletedError: string[] = [];
 
   constructor(private restService: CloudAppRestService,
               private appService: AppService,
               private formBuilder: FormBuilder,
               private alert: AlertService,
               private eventsService: CloudAppEventsService,) {
-    this.allPolinesForm=this.formBuilder.group({
-      allPolines: this.formBuilder.array([]) ,
-    })
-    this.deletePolinesForm=this.formBuilder.group({
-      deletePolines: this.formBuilder.array([]) ,
-    })
-/*
-  this.myForm = this.formBuilder.group({
-    firstName: new FormControl(''),
-    lastName: new FormControl(''),
-  })
-*/
-
-/*
-    console.log("Yes JJ")
-    this.myForm = this.formBuilder.group({
-      myOptionsArray: this.formBuilder.array([
-        this.formBuilder.group({id: 1, name: 'Option 1', selected: false, link: '/acq/po-lines/POL-97330'}),
-        this.formBuilder.group({id: 2, name: 'Option 2', selected: false, link: '/acq/po-lines/POL-97331'}),
-        this.formBuilder.group({id: 3, name: 'Option 3', selected: false, link: '/acq/po-lines/POL-97332'})
-      ])
-    })
-    this.myForm.controls.myOptionsArray.value.forEach(tmpValue => {console.log(tmpValue.name)})
-    console.log(this.myForm.controls.myOptionsArray.value);
-*/
   }
-
-//*****************************************************************'
-  allPolines(): FormArray {
-    return this.allPolinesForm.get("allPolines") as FormArray
-  }
-
-  deletePolines(): FormArray {
-    return this.deletePolinesForm.get("deletePolines") as FormArray
-  }
-
-  newAllPoline(id: string, description: string, poLineDetailsLink: string): FormGroup {
-    console.log('initNewAllPoLine: ' + id);
-    return this.formBuilder.group({
-      id: id,
-      description: description,
-      poLineDetailsLink: poLineDetailsLink,
-    })
-  }
-
-  newDeletePoline(id: string, description: string, poLineDetailsLink: string): FormGroup {
-    console.log('newDeletePoline: ' + poLineDetailsLink);
-    return this.formBuilder.group({
-      id: id,
-      description: description,
-      poLineDetailsLink: poLineDetailsLink,
-    })
-  }
-
-  addAllPoLine(id: string, description: string, poLineDetailsLink: string) {
-    this.allPolines().push(this.newAllPoline(id, description, poLineDetailsLink));
-  }
-
-  addDeletePoLine(id: string, description: string, poLineDetailsLink: string) {
-    console.log('addDeletePoLine: ' + '  Id: ' + id + ' description: ' + description);
-    this.deletePolines().push(this.newDeletePoline(id, description, poLineDetailsLink));
-  }
-
-  removeFromAllPoLine(allPolinesIndex:number) {
-    const abstractControl = this.allPolines().get([allPolinesIndex]);
-    this.addDeletePoLine(abstractControl.get('id').value,abstractControl.get('description').value, abstractControl.get('poLineDetailsLink').value);
-    this.allPolines().removeAt(allPolinesIndex);
-  }
-
-  undoRemoveFromAllPoLine(deletePolinesIndex: number) {
-    const abstractControl = this.deletePolines().get([deletePolinesIndex]);
-    this.addAllPoLine(abstractControl.get('id').value,abstractControl.get('description').value, abstractControl.get('poLineDetailsLink').value);
-    this.deletePolines().removeAt(deletePolinesIndex);
-  }
-
-  getAllPolineDescription(allPolinesIndex: number){
-    const abstractControl = this.allPolines().get([allPolinesIndex]);
-    console.log('allePolinesIndex: ' + allPolinesIndex);
-    return abstractControl.get('description').value;
-  }
-
-  getDeletePolineDescription(deletePolinesIndex: number){
-    const abstractControl = this.deletePolines().get([deletePolinesIndex]);
-    console.log('deletePolinesIndex: ' + deletePolinesIndex);
-    return abstractControl.get('description').value;
-  }
-
-
-
 
   onSubmit() {
     console.log(this.allPolinesForm.value);
   }
-//*****************************************************************'
-
-
-
-
-  get myOptionsArray() {
-    return this.myForm.get('myOptionsArray') as FormArray;
-  }
 
   ngOnInit() {
     this.appService.setTitle('Cancel PoLines');
+    this.allPolinesForm=this.formBuilder.group({
+      allPolines: this.formBuilder.array([]) ,
+    });
+    this.deletePolinesForm=this.formBuilder.group({
+      deletePolines: this.formBuilder.array([]) ,
+    });
     this.loading = true;
     this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
   }
@@ -155,65 +61,21 @@ export class ParallelComponent implements OnInit {
     this.loading = false;
   }
 
-  run() {
-    this.users = [];
-    this.usersNotLoaded = [];
-    this.loadUsers();
-  }
-
-  loadUsers() {
-    this.loading = true;
-    this.processed = 0;
-    this.numberOfErrors = 0;
-    this.altNumberOfErrors = 0
-    this.restService.call(`/users?limit=${this.num}`)                             //henter brugere fra alma
-        .pipe(
-            map(users=>map(user=>this.getUser(user))), //danner et map af requests (før det tilføjes fejlobjekter)
-            switchMap(reqs=>forkJoin(reqs)),                                      //request sendes afsted parallelt
-        )
-        .subscribe({     //Vi behandler svaret fra request (getuser returnerer  enten en user eller et fejlobjekt)
-          next: (s: any[])=>{
-            s.forEach(user=>{
-              if (isRestErrorResponse(user)) {  //fejlobjekt returneret
-                console.log('Error retrieving user: ' + user.message);
-                this.numberOfErrors++;
-              } else {    //userObjekt returneret
-                user.primary_id = 'false';
-                this.users.push(user);
-              }
-            })
-          },
-          complete: () => this.loading=false,
-        });
-  }
-
   loadPolineDetails() {
     this.loading = true;
     this.poLineProcessed = 0;
     this.polinesNumberOfErrors = 0
-    this.pageEntities.forEach(poline => this.getPolineDetails(poline))
+    if(this.pageEntities.length>0 && this.pageEntities[0].link.toString().includes('/acq/po-lines')) {
+      this.pageEntities.forEach(poline => {
+        this.getAndFilterPolinesByStatus(poline);
+      });
+      this.pageIsShowingPolines = true;
+    } else {
+      this.pageIsShowingPolines = false;
+    }
   }
 
-  clear() {
-    this.users = [];
-    this.usersNotLoaded =[];
-  }
-
-  //Returnerer et getUser request
-  getUser(user: any) {
-    return this.restService.call(`/users/${user.primary_id}?expand=fees`).pipe(
-        tap(()=>this.processed++),        //Operator nr. 1 tæller processed op
-        catchError(e => {              //Operator nr. 2
-          this.altNumberOfErrors++;
-          this.usersNotLoaded.push(user.primary_id);
-          return of(e);                        //Wrapper eventuelle fejl i et  fejlobjekt
-        }),
-    )
-  }
-
-  //Returnerer et poLineDetails request
-  getPolineDetails(entity: Entity) {
-    const STATUS_CANCELLED = 'CANCELLED';
+  getAndFilterPolinesByStatus(entity: Entity) {
     let url = entity.link;
     let request: Request = {
       url: url,
@@ -222,9 +84,9 @@ export class ParallelComponent implements OnInit {
     this.restService.call(request).subscribe({
       next: result => {
         const polineStatus = result.status.value;
-        if(polineStatus !== STATUS_CANCELLED){
-          console.log('Added!');
+        if(!(this.REMOVE_STATUSES.some(status => polineStatus === status))){//filter by status
           this.addAllPoLine(entity.id,entity.description, entity.link);
+          this.poLineDetails.push(result); //Save full polineDetail
         }
       },
       error: (e: RestErrorResponse) => {
@@ -233,22 +95,55 @@ export class ParallelComponent implements OnInit {
       }
     });  }
 
-  get percentComplete() {
-    return Math.round((this.processed/this.num)*100)
-  }
-
-  onPoLineChecked(allPoLine: AbstractControl) {
-    const checked = allPoLine.get('checked').value;
-    const id = allPoLine.get('id').value;
-  }
-
   cancelSelectedPolines() {
     const numberOfDeletePolines = this.deletePolines().length;
     for (let i = 0; i < numberOfDeletePolines; i++) {
       const abstractControl = this.deletePolines().get([i]);
-      //TODO: implement call to cancel.
-      console.log('cancelSelectedPolines(): ' + abstractControl.get('description').value);
-    }
+      const tmpLink = abstractControl.get('link').value;
+      const tmpDescription = abstractControl.get('description').value;
+      /*
+            console.log('detailsLink: ' + detailsLink);TODO: Det er dette link, der skal kaldes med til deletePoline. Der kan ryddes op!
+            var polineToBeCancelled = this.poLineDetails.filter(tmpDetail => {
+              if(detailsLink.includes(tmpDetail.number)){
+                return tmpDetail;
+              }
+              return undefined;
+            });
+            if(polineToBeCancelled!== undefined){
+              let poLineCode = polineToBeCancelled[0].number;
+              console.log('polineToBeCancelled.number: ' + poLineCode);
+              let url = "/acq/po-lines/" + poLineCode;
+      */
+        this.deletePoline(tmpLink, tmpDescription);
+      }
+    // }
+    this.allPolines().clear()
+    this.deletePolines().clear();
+    // this.refreshPage();
+  }
+
+
+  private deletePoline(url: string, description) {
+    var deleteRequest: Request = {
+      url: url,
+      method: HttpMethod.DELETE,
+      queryParams: {["reason"]: "LIBRARY_CANCELLED"}
+    };
+    console.log('Deleting; ' + deleteRequest.url + '  ' +  JSON.stringify(deleteRequest.queryParams))
+    this.restService.call(deleteRequest).subscribe({
+      next: () => {
+        console.log('Cancelled: ' + description);
+        this.deletedOK.push(description);
+      },
+      error: (e: RestErrorResponse) => {
+        const descAndErrorMessage = description.substring(0,25) + 'Error: ' + e.message;
+        this.deletedError.push(descAndErrorMessage);
+        console.log('Cancelled Error: ' + descAndErrorMessage);
+      },
+      complete: () => {
+        // this.alert.success("PO-lines deleted: " + this.deletedEntities.length + " Id's are: " + this.deletedEntities);
+      }
+    });
   }
 
   refreshPage = () => {
@@ -262,7 +157,67 @@ export class ParallelComponent implements OnInit {
       complete: () => this.loading = false
     });
   }
-}
 
-const getRandomInt = (max: number)  => Math.floor(Math.random() * Math.floor(max));
-const isRestErrorResponse = (object: any): object is RestErrorResponse => 'error' in object;
+  allPolines(): FormArray {
+    return this.allPolinesForm.get("allPolines") as FormArray
+  }
+
+  deletePolines(): FormArray {
+    return this.deletePolinesForm.get("deletePolines") as FormArray
+  }
+
+  newAllPoline(id: string, description: string, link: string): FormGroup {
+    console.log('initNewAllPoLine: ' + id);
+    return this.formBuilder.group({
+      id: id,
+      description: description,
+      link: link,
+    })
+  }
+
+  newDeletePoline(id: string, description: string, link: string): FormGroup {
+    console.log('newDeletePoline: ' + link);
+    return this.formBuilder.group({
+      id: id,
+      description: description,
+      link: link,
+    })
+  }
+
+  addAllPoLine(id: string, description: string, link: string) {
+    this.allPolines().push(this.newAllPoline(id, description, link));
+  }
+
+  addDeletePoLine(id: string, description: string, link: string) {
+    console.log('addDelete: poLineDetailsLink: ' + link)
+    this.deletePolines().push(this.newDeletePoline(id, description, link));
+  }
+
+  removeFromAllPoLine(allPolinesIndex:number) {
+    const abstractControl = this.allPolines().get([allPolinesIndex]);
+    this.addDeletePoLine(abstractControl.get('id').value,abstractControl.get('description').value, abstractControl.get('link').value);
+    this.allPolines().removeAt(allPolinesIndex);
+  }
+
+  undoRemoveFromAllPoLine(deletePolinesIndex: number) {
+    const abstractControl = this.deletePolines().get([deletePolinesIndex]);
+    this.addAllPoLine(abstractControl.get('id').value,abstractControl.get('description').value, abstractControl.get('link').value);
+    this.deletePolines().removeAt(deletePolinesIndex);
+  }
+
+  selectAllGui() {
+    for (let i = 0; i < this.allPolines().length; i++) {
+      const abstractControl = this.allPolines().get([i]);
+      this.addDeletePoLine(abstractControl.get('id').value,abstractControl.get('description').value, abstractControl.get('link').value);
+    }
+    this.allPolines().clear();
+  }
+
+  deselectAllGui() {
+    for (let i = 0; i < this.deletePolines().length; i++) {
+      const abstractControl = this.deletePolines().get([i]);
+      this.addAllPoLine(abstractControl.get('id').value,abstractControl.get('description').value, abstractControl.get('link').value);
+    }
+    this.deletePolines().clear();
+  }
+}

@@ -11,12 +11,10 @@ import { AppRoutingModule } from './app-routing.module';
 import { MainComponent } from './main/main.component';
 import { TopmenuComponent } from './topmenu/topmenu.component';
 import { ConfirmationDialog } from "./style/style.component";
-import { POlineComponent } from "./poline/poline.component";
 import {TruncatePipe} from "./pipes/truncate.pipe";
 import {ReplaceVendorComponent} from "./replaceVendor/replace-vendor.component";
-import { ParallelComponent } from './parallel/parallel.component';
 import { SettingsComponent } from './settings/settings.component';
-import { JjComponent } from './jj/jj.component';
+import {CancelPolineComponent} from "./cancelPoline/cancelPoline.component";
 
 
 @NgModule({
@@ -25,12 +23,10 @@ import { JjComponent } from './jj/jj.component';
     TruncatePipe,
     MainComponent,
     TopmenuComponent,
-    POlineComponent,
     ReplaceVendorComponent,
     ConfirmationDialog,
-    ParallelComponent,
+    CancelPolineComponent,
     SettingsComponent,
-    JjComponent,
   ],
   imports: [
     MaterialModule,

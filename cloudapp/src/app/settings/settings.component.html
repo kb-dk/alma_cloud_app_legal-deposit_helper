@@ -11,10 +11,10 @@
     <form [formGroup]="form">
         <mat-card class="input-card">
             <mat-card-header>
-                <mat-card-title>PO Line - replace vendor settings:</mat-card-title>
+                <mat-card-title>PO Lines - replace vendor:</mat-card-title>
             </mat-card-header>
             <mat-card-content>
-                <label>Vendorname of found PO Lines must include:</label><br>
+                <label>Vendor name of found PO Lines must include:</label><br>
                 <section class="settings-section">
                     <mat-form-field appearance="fill">
                         <mat-label class="example-margin"></mat-label>
@@ -30,7 +30,7 @@
                 </section>
                 <section class="settings-section">
                     <div>
-                        <mat-checkbox labelPosition="after" formControlName="searchUsingBib260B" >Pre-fill search with Bib datafield 260 b(The Royal Danish Library specific) </mat-checkbox>
+                        <mat-checkbox labelPosition="after" formControlName="searchUsingBib260B" >Pre-fill search for vendors with Bib datafield 260 b(The Royal Danish Library specific) </mat-checkbox>
 <!--
                         <mat-icon class="tooltip">info</mat-icon>
                         <div class="tooltiptext">Special case for The Royal Danish Library. Leave unchecked</div>
@@ -48,5 +48,5 @@
             </mat-card-content>
         </mat-card>
     </form>
-    <pre>{{ form.value | json }}</pre>
+<!--    <pre>{{ form.value | json }}</pre>-->
 </div>

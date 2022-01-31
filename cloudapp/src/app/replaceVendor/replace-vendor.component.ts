@@ -1,19 +1,23 @@
-import { Subscription } from 'rxjs';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import {Subscription} from 'rxjs';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {
-  CloudAppRestService, CloudAppEventsService, Request, HttpMethod,
-  Entity, PageInfo, RestErrorResponse, AlertService, CloudAppSettingsService
+  AlertService,
+  CloudAppEventsService,
+  CloudAppRestService,
+  CloudAppSettingsService,
+  Entity,
+  HttpMethod,
+  PageInfo,
+  Request,
+  RestErrorResponse
 } from '@exlibris/exl-cloudapp-angular-lib';
 import {AppService} from "../app.service";
-import {ToastrService} from "ngx-toastr";
-import {VendorFields} from "../poline/vendorFields";
 import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
-import {MatCheckboxChange} from "@angular/material/checkbox";
 import {MatRadioChange} from "@angular/material/radio";
 import * as url from "url";
 import {Settings} from "../models/settings";
 import {CloudAppOutgoingEvents} from "@exlibris/exl-cloudapp-angular-lib/lib/events/outgoing-events";
-import settings = CloudAppOutgoingEvents.settings;
+import {VendorFields} from "./vendorFields";
 
 @Component({
   selector: 'app-replace-vendor',
@@ -60,7 +64,7 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.pageLoading = true;
-    this.appService.setTitle('Change PO-line vendor');
+    this.appService.setTitle('PO Lines - replace vendor');
     this.initFormGroups();
     this.initSettings();
   }

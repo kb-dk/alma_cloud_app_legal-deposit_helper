@@ -1,24 +1,25 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 
 import {
   AlertService,
   CloudAppEventsService,
-  CloudAppRestService, Entity, HttpMethod,
-  PageInfo, Request,
+  CloudAppRestService,
+  Entity,
+  HttpMethod,
+  PageInfo,
+  Request,
   RestErrorResponse
 } from '@exlibris/exl-cloudapp-angular-lib';
-import { map, catchError, switchMap, tap } from 'rxjs/operators';
-import {of, forkJoin, Observable, Subscription} from 'rxjs';
-import { AppService } from '../app.service';
-import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup} from "@angular/forms";
-import {JjComponent} from "../jj/jj.component";
+import {Subscription} from 'rxjs';
+import {AppService} from '../app.service';
+import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
 
 @Component({
-  selector: 'app-parallel',
-  templateUrl: './parallel.component.html',
-  styleUrls: ['./parallel.component.scss']
+  selector: 'app-cancel-poline',
+  templateUrl: './cancelPoline.component.html',
+  styleUrls: ['./cancelPoline.component.scss']
 })
-export class ParallelComponent implements OnInit {
+export class CancelPolineComponent implements OnInit {
   private REMOVE_STATUSES = ['CANCELLED', 'CLOSED'];
   private allPolinesForm: FormGroup;
   private deletePolinesForm: FormGroup;
@@ -44,7 +45,7 @@ export class ParallelComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.appService.setTitle('Cancel PoLines');
+    this.appService.setTitle('PO Lines - cancel');
     this.allPolinesForm=this.formBuilder.group({
       allPolines: this.formBuilder.array([]) ,
     });

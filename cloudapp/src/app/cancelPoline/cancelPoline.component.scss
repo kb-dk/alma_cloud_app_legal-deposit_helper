@@ -22,7 +22,8 @@ div.selectPoline {
 /* Tooltip container */
 .tooltip {
   position: relative;
-  display: inline-block;
+  display: block;
+  width: 12em;
   border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
 }
 
@@ -38,6 +39,7 @@ div.selectPoline {
 
   /* Position the tooltip text - see examples below! */
   position: absolute;
+  left: -1em;
   z-index: 1;
 }
 

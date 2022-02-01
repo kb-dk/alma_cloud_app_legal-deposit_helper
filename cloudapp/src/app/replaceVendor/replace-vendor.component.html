@@ -78,17 +78,21 @@
                 </mat-card-header>
                 <mat-card-subtitle *ngIf="vendorSearchLimitExceeded" class="bold-weight"><b>More than {{settings.vendorSearchLimit}} vendors found! Consider altering your search criteria.</b></mat-card-subtitle>
                 <mat-card-subtitle *ngIf="(this.settings.vendorCodeFilter && this.settings.vendorCodeFilter.length > 0)">Vendor code of search result is filtered with '<b class="bold-weight large">{{settings.vendorCodeFilter}}</b>'. This can be changed in 'Settings'.</mat-card-subtitle>
-                <mat-card-content *ngIf="foundVendors.length>0">
-                    <form [formGroup]="vendorsForm" novalidate>
-                        <mat-radio-group>
-                            <div *ngFor="let vendorFields of foundVendors; let i=index">
-                                <mat-radio-button (change)="vendorSelected($event, vendorFields.getLink())" [value]="vendorFields.getCode()">{{ vendorFields.getName() }}</mat-radio-button>
-                            </div>
-                        </mat-radio-group>
+                <mat-card-content *ngIf="vendors().controls.length>0">
+                    <form [formGroup]="vendorsForm">
+                        <div formArrayName="vendors">
+                            <mat-radio-group>
+                                <div *ngFor="let vendors of vendors().controls; let vendorsIndex=index">
+                                    <div class="selectPoline" [formGroupName]='vendorsIndex'>
+                                        <mat-radio-button (change)="vendorSelected(vendorsIndex)" value="{{vendors.get('code').value}}">{{ vendors.get('name').value| truncate : 40 }}</mat-radio-button>
+                                    </div>
+                                </div>
+                            </mat-radio-group>
+                        </div>
                     </form>
                 </mat-card-content>
                 <mat-card-actions *ngIf="selectedNewVendorLink!==''">
-                    <button mat-raised-button color="primary" (click)="SetNewVendor()">Replace Vendor</button>
+                    <button mat-raised-button color="primary" (click)="replaceVendorForPoline()">Replace Vendor</button>
                 </mat-card-actions>
                 <p *ngIf="selectedNewVendorLink!==''">PO Line: <b>{{selectedPoLine.description | truncate: 35}}</b></p>
             </mat-card>

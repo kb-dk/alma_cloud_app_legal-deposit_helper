@@ -1,8 +1,6 @@
 <app-topmenu>
     <div buttons>
         <button mat-flat-button type="button" color="secondary" (click)="refreshPage()">Refresh</button>
-<!--        <button mat-flat-button type="button" color="secondary" (click)="clear()">Clear</button>-->
-<!--        <button mat-flat-button type="button" color="primary" (click)="run()">Retrieve users</button>-->
     </div>
 </app-topmenu>
 
@@ -10,7 +8,7 @@
     <mat-card>
         <mat-card-header>
             <mat-card-title>Please select PO Lines to cancel</mat-card-title>
-            <mat-card-subtitle>PO Lines having status '<b class="bold-weight">{{REMOVE_STATUSES.toString()}}</b>' are not shown!</mat-card-subtitle>
+            <mat-card-subtitle>{{selectPolinesSubtitle}}</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
             <button class="linkButton all" (click)="selectAllGui()">Select all</button>
@@ -68,73 +66,3 @@
 <ng-template #notAPolinePage>
     <h2>Please navigate to an Alma PO Line list page.</h2>
 </ng-template>
-
-<!--{{this.allPolinesForm.value | json}}-->
-
-<!--
-<form [formGroup]="myForm">
-    <div formArrayName="myOptionsArray">
-        <div *ngFor="let myOption of myOptionsArray.controls; let i = index">
-            <div formGroupName="{{ i }}">
-                <input type="checkbox" [formControl]="myOption.get('selected')" (change)="onCheckboxChange(myOption)" />
-                <label> {{ myOption.get('name').value }} {{ myOption.get('link').value }} </label>
-            </div>
-        </div>
-    </div>
-</form>
-<section>
-    <mat-card class="example-card">
-        <mat-card-header>
-            <mat-card-title>Valgte options</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-            <div *ngFor="let selected of selectedFormControls; let i = index">
-                <mat-label>{{selected.get('id').value}}</mat-label>
-                <input type="text" [value]="selected.get('name').value">
-            </div>
-        </mat-card-content>
-    </mat-card>
-</section>
-
-
-
-<div>
-    <label>Antal behandlede: {{this.processed}}</label>
-</div>
-<div>
-    <label>Antal fejl: {{this.numberOfErrors}}</label><br>
-    <label>Alt. antal fejl: {{this.altNumberOfErrors}}</label>
-</div>
-
-<div class="loading-shade" *ngIf="loading">
-    <mat-progress-spinner
-            [mode]="showProgress ? 'determinate' : 'indeterminate'"
-            diameter="50"
-            [value]="percentComplete"
-    >
-    </mat-progress-spinner>
-</div>
-<mat-form-field>
-    <mat-label>Number of users to retrieve</mat-label>
-    <mat-select [(value)]="num">
-        <mat-option [value]="5">5</mat-option>
-        <mat-option [value]="10">10</mat-option>
-        <mat-option [value]="20">20</mat-option>
-        <mat-option [value]="30">30</mat-option>
-        <mat-option [value]="40">40</mat-option>
-        <mat-option [value]="50">50</mat-option>
-        <mat-option [value]="100">100</mat-option>
-    </mat-select>
-</mat-form-field>
-<mat-checkbox [(ngModel)]="showProgress" labelPosition="before">Show progress</mat-checkbox>
-
-<div *ngFor="let user of users">
-    <mat-checkbox [(ngModel)]="user.primary_id" labelPosition="after"><strong>{{ user.full_name }}</strong>{{ user.fees.value }}</mat-checkbox>
-</div>
-
-<ul>
-    <li *ngFor="let id of usersNotLoaded">
-        <strong>{{ id }}</strong>
-    </li>
-</ul>
--->

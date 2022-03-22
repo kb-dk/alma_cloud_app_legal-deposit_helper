@@ -18,7 +18,6 @@ import * as url from "url";
 import {Settings} from "../models/settings";
 import {TruncatePipe} from "../pipes/truncate.pipe";
 
-
 @Component({
   selector: 'app-replace-vendor',
   templateUrl: './replace-vendor.component.html',
@@ -33,7 +32,7 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   private vendorsFound = false;
   private showSearchVendorResult= false;
 
-  private selectedNewVendorLink: url = '';
+  private selectedVendorLink: url = '';
   private vendorSearchString = ""
   private showPoLines = true; //Styrer om poline vises/skjules
   private showAllPolines: boolean = false; //Skal alle polines vises eller kun polines filtreret på settings name
@@ -148,7 +147,6 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
       next: result => {
           this.polineDetails = result;
           this.getBibPost(result);
-        // this.refreshPage();
       },
       error: (e: RestErrorResponse) => {
         this.alert.error('getPolineDetails; Failed to get data');
@@ -202,13 +200,14 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
       link: link,
     })
   }
-   search(vendorNameSearchString: string) {
-      this.pageLoading = true;
-      this.vendorSearchString = vendorNameSearchString;
-      this.showSearchVendorResult = true;
-      this.vendorSearchLimitExceeded = false;
-      this.searchVendors(vendorNameSearchString);
-    }
+
+  search(vendorNameSearchString: string) {
+    this.pageLoading = true;
+    this.vendorSearchString = vendorNameSearchString;
+    this.showSearchVendorResult = true;
+    this.vendorSearchLimitExceeded = false;
+    this.searchVendors(vendorNameSearchString);
+  }
 
   private searchVendors(vendorNameSearchString: string) {
     this.vendorsFound = false;
@@ -258,7 +257,6 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
       },
       complete: () => {
         this.pageLoading = false;
-        // this.alert.info('4. Data OK from search: ' + searchString);
       }
     });
   }
@@ -266,7 +264,7 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   vendorSelected(vendorIndex: number) {
     const abstractControl = this.vendors().get([vendorIndex]);
     const link = abstractControl.get('link').value;
-    this.selectedNewVendorLink = link;
+    this.selectedVendorLink = link;
     this.getSelectedVendorDetails(link)
   }
 

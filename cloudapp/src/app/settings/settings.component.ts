@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AppService } from '../app.service';
-import { FormGroup } from '@angular/forms';
+import {FormArray, FormGroup} from '@angular/forms';
 import { AlertService, CloudAppSettingsService, FormGroupUtil } from '@exlibris/exl-cloudapp-angular-lib';
 import { Settings } from '../models/settings';
 
@@ -11,6 +11,7 @@ import { Settings } from '../models/settings';
 })
 export class SettingsComponent implements OnInit {
   form: FormGroup;
+  formArray: FormArray;
   saving = false;
 
   constructor(
@@ -28,6 +29,7 @@ export class SettingsComponent implements OnInit {
 
   save() {
     this.saving = true;
+    console.log('this.form.value: ' + JSON.stringify(this.form.value));
     this.settingsService.set(this.form.value).subscribe(
         response => {
           this.alert.success('Settings saved. Please restart the cloudApp to avoid rendering problems!', { autoClose: false });

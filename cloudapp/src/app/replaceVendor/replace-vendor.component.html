@@ -59,7 +59,7 @@
                     </mat-card-header>
                     <mat-card-content>
                         <mat-label>Search criteria: </mat-label>
-                        <input matInput #searchInput [value]="vendorSearchString">
+                        <input matInput #searchInput [value]="vendorSearchString" (submit)="search(searchInput.value)">
                     </mat-card-content>
                     <mat-card-actions>
                         <button mat-raised-button color="primary" (click)="search(searchInput.value)">Search</button>
@@ -91,10 +91,10 @@
                         </div>
                     </form>
                 </mat-card-content>
-                <mat-card-actions *ngIf="selectedNewVendorLink!==''">
+                <mat-card-actions *ngIf="selectedVendorLink!==''">
                     <button mat-raised-button color="primary" (click)="replaceVendorForPoline()">Replace Vendor</button>
                 </mat-card-actions>
-                <p *ngIf="selectedNewVendorLink!==''">PO Line: <b>{{selectedPoLine.description | truncate: 35}}</b></p>
+                <p *ngIf="selectedVendorLink!==''">PO Line: <b>{{selectedPoLine.description | truncate: 35}}</b></p>
             </mat-card>
         </section>
     </div>

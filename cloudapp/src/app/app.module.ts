@@ -15,6 +15,7 @@ import {TruncatePipe} from "./pipes/truncate.pipe";
 import {ReplaceVendorComponent} from "./replaceVendor/replace-vendor.component";
 import { SettingsComponent } from './settings/settings.component';
 import {CancelPolineComponent} from "./cancelPoline/cancelPoline.component";
+import { RecieveBulkComponent } from './recieve-bulk/recieve-bulk.component';
 
 
 @NgModule({
@@ -27,6 +28,7 @@ import {CancelPolineComponent} from "./cancelPoline/cancelPoline.component";
     ConfirmationDialog,
     CancelPolineComponent,
     SettingsComponent,
+    RecieveBulkComponent,
   ],
   imports: [
     MaterialModule,

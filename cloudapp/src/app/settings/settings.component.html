@@ -1,4 +1,4 @@
-<app-topmenu>
+<app-topmenu xmlns="http://www.w3.org/1999/html">
     <div buttons>
         <button mat-flat-button type="button" color="primary" (click)="save()" [disabled]="!(form?.dirty)">Save</button>
 <!--        <button mat-flat-button type="button" color="primary" (click)="remove()">Remove all settings</button> -->
@@ -30,7 +30,7 @@
                 </section>
                 <section class="settings-section">
                     <div>
-                        <mat-checkbox labelPosition="after" label="Pre-fill search for vendors with Bib datafield 260 b(The Royal Danish Library specific)" formControlName="searchUsingBib260B" ></mat-checkbox>
+                        <mat-checkbox formControlName="searchUsingBib260B" >Pre-fill search for vendors with Bib datafield 260 b (Special case for The Royal Danish Library?)</mat-checkbox>
 <!--
                         <mat-icon class="tooltip">info</mat-icon>
                         <div class="tooltiptext">Special case for The Royal Danish Library. Leave unchecked</div>
@@ -48,23 +48,21 @@
             </mat-card-content>
         </mat-card>
 
-<!--
-        <mat-card class="input-card">
+        <mat-card class="input-card input-card-cancel">
             <mat-card-header>
                 <mat-card-title>PO Lines - cancel:</mat-card-title>
             </mat-card-header>
             <mat-card-content>
-                <label>Do not show polines with status:</label><br>
+                <label>Do not show PO Lines with status:</label><br>
                 <section class="settings-section">
                     <div>
-                        <input formControlName="checks[0]" type="checkbox" label="Cancelled" labelPosition="after">
-                        <input formControlName="checks[1]" type="checkbox" label="Closed" labelPosition="after">
-                        <input formControlName="checks[2]" type="checkbox" label="Test" labelPosition="after">
+                        <mat-checkbox formControlName="CANCELLED">Cancelled</mat-checkbox><br>
+                        <mat-checkbox formControlName="DELETED">Deleted</mat-checkbox><br>
+                        <mat-checkbox formControlName="CLOSED">Closed</mat-checkbox><br>
                     </div>
                 </section>
             </mat-card-content>
         </mat-card>
--->
     </form>
     <pre>{{ form.value | json }}</pre>
 </div>

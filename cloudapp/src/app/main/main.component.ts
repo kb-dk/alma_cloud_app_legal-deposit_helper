@@ -46,7 +46,7 @@ export class MainComponent implements OnInit {
   ) { }
 
   ngOnInit() { 
-    this.appService.setTitle('');
+    this.appService.setTitle('Home');
     this.eventsService.getInitData().subscribe(data=>this.isAdmin = data.user.isAdmin)
   }
 

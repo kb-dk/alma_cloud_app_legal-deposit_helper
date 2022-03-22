@@ -3,7 +3,7 @@ import {Component, OnInit} from '@angular/core';
 import {
   AlertService,
   CloudAppEventsService,
-  CloudAppRestService,
+  CloudAppRestService, CloudAppSettingsService,
   Entity,
   HttpMethod,
   PageInfo,
@@ -13,6 +13,8 @@ import {
 import {Subscription} from 'rxjs';
 import {AppService} from '../app.service';
 import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
+import SettingStatusClass from "../models/settings.constants";
+import {Settings} from "../models/settings";
 
 @Component({
   selector: 'app-cancel-poline',
@@ -20,7 +22,8 @@ import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
   styleUrls: ['./cancelPoline.component.scss']
 })
 export class CancelPolineComponent implements OnInit {
-  private REMOVE_STATUSES = ['CANCELLED', 'CLOSED'];
+  private REMOVE_STATUSES = [];
+  private selectPolinesSubtitle: String
   private allPolinesForm: FormGroup;
   private deletePolinesForm: FormGroup;
   poLineProcessed = 0;
@@ -32,12 +35,14 @@ export class CancelPolineComponent implements OnInit {
   private poLineDetails: any[] =[];//All polineDetails objects.
   private deletedOK: string[] = [];
   private deletedError: string[] = [];
+  private settings: Settings;
 
   constructor(private restService: CloudAppRestService,
               private appService: AppService,
               private formBuilder: FormBuilder,
               private alert: AlertService,
-              private eventsService: CloudAppEventsService,) {
+              private eventsService: CloudAppEventsService,
+              private settingsService: CloudAppSettingsService) {
   }
 
   onSubmit() {
@@ -45,6 +50,7 @@ export class CancelPolineComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.initSettings();
     this.appService.setTitle('PO Lines - cancel');
     this.allPolinesForm=this.formBuilder.group({
       allPolines: this.formBuilder.array([]) ,
@@ -56,7 +62,36 @@ export class CancelPolineComponent implements OnInit {
     this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
   }
 
-  onPageLoad = (pageInfo: PageInfo) => {
+  private initSettings() {
+    this.settingsService.get().subscribe(settings => {
+      this.settings = settings as Settings;
+      SettingStatusClass.statusses.forEach(tmpStatus => {
+        if(settings[tmpStatus.status]){ //if found and true, we use the status as filter in REMOVE_STATUSES
+          this.REMOVE_STATUSES.push(tmpStatus.status);
+        }
+      });
+      if(this.REMOVE_STATUSES.length===1){
+        this.selectPolinesSubtitle= 'PO Lines having status ' +  this.REMOVE_STATUSES[0] + ' are not shown!';
+      }
+      else if(this.REMOVE_STATUSES.length>1){
+        var statusListString:string = 'PO Lines having status ' + this.REMOVE_STATUSES[0];
+        for (let i = 1; i < this.REMOVE_STATUSES.length; i++) {
+          if(i === this.REMOVE_STATUSES.length-1){
+            statusListString += ' and ';
+            statusListString += this.REMOVE_STATUSES[i];
+            statusListString += '.';
+          } else {
+            statusListString += ' ,';
+            statusListString += this.REMOVE_STATUSES[i];
+          }
+        }
+        statusListString += ' are not shown!';
+        this.selectPolinesSubtitle= statusListString;
+      }
+    });
+  }
+
+onPageLoad = (pageInfo: PageInfo) => {
     this.pageEntities = pageInfo.entities;
     this.loadPolineDetails();
     this.loading = false;
@@ -92,35 +127,24 @@ export class CancelPolineComponent implements OnInit {
       },
       error: (e: RestErrorResponse) => {
         console.error(e);
-//        this.pageLoading = false; TODO: noget med noget complete
-      }
-    });  }
+        this.loading = false;
+      },
+      complete: () => this.loading = false,
+    });
+  }
 
   cancelSelectedPolines() {
+    this.loading = true;
     const numberOfDeletePolines = this.deletePolines().length;
     for (let i = 0; i < numberOfDeletePolines; i++) {
       const abstractControl = this.deletePolines().get([i]);
       const tmpLink = abstractControl.get('link').value;
       const tmpDescription = abstractControl.get('description').value;
-      /*
-            console.log('detailsLink: ' + detailsLink);TODO: Det er dette link, der skal kaldes med til deletePoline. Der kan ryddes op!
-            var polineToBeCancelled = this.poLineDetails.filter(tmpDetail => {
-              if(detailsLink.includes(tmpDetail.number)){
-                return tmpDetail;
-              }
-              return undefined;
-            });
-            if(polineToBeCancelled!== undefined){
-              let poLineCode = polineToBeCancelled[0].number;
-              console.log('polineToBeCancelled.number: ' + poLineCode);
-              let url = "/acq/po-lines/" + poLineCode;
-      */
         this.deletePoline(tmpLink, tmpDescription);
       }
-    // }
     this.allPolines().clear()
     this.deletePolines().clear();
-    // this.refreshPage();
+    this.loading = false;
   }
 
 
@@ -141,21 +165,6 @@ export class CancelPolineComponent implements OnInit {
         this.deletedError.push(descAndErrorMessage);
         console.log('Cancelled Error: ' + descAndErrorMessage);
       },
-      complete: () => {
-        // this.alert.success("PO-lines deleted: " + this.deletedEntities.length + " Id's are: " + this.deletedEntities);
-      }
-    });
-  }
-
-  refreshPage = () => {
-    this.loading = true;
-    this.eventsService.refreshPage().subscribe({
-      next: () => this.alert.success('Page refreshed!'),
-      error: e => {
-        console.error(e);
-        this.alert.error('Failed to refresh page');
-      },
-      complete: () => this.loading = false
     });
   }
 
@@ -168,7 +177,6 @@ export class CancelPolineComponent implements OnInit {
   }
 
   newAllPoline(id: string, description: string, link: string): FormGroup {
-    console.log('initNewAllPoLine: ' + id);
     return this.formBuilder.group({
       id: id,
       description: description,
@@ -220,5 +228,11 @@ export class CancelPolineComponent implements OnInit {
       this.addAllPoLine(abstractControl.get('id').value,abstractControl.get('description').value, abstractControl.get('link').value);
     }
     this.deletePolines().clear();
+  }
+
+  refreshPage(){
+    this.deletedOK = [];
+    this.deletedError = []
+    this.ngOnInit();
   }
 }

@@ -29,7 +29,6 @@ export class SettingsComponent implements OnInit {
 
   save() {
     this.saving = true;
-    console.log('this.form.value: ' + JSON.stringify(this.form.value));
     this.settingsService.set(this.form.value).subscribe(
         response => {
           this.alert.success('Settings saved. Please restart the cloudApp to avoid rendering problems!', { autoClose: false });
@@ -40,7 +39,7 @@ export class SettingsComponent implements OnInit {
     );
   }
 
-  remove() {
+  remove() {//resets settings - handy for development use.
     this.settingsService.remove().subscribe( () => console.log('removed') );
   }
 }

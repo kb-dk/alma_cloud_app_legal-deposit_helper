@@ -10,7 +10,6 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { MainComponent } from './main/main.component';
 import { TopmenuComponent } from './topmenu/topmenu.component';
-import { ConfirmationDialog } from "./style/style.component";
 import {TruncatePipe} from "./pipes/truncate.pipe";
 import {ReplaceVendorComponent} from "./replaceVendor/replace-vendor.component";
 import { SettingsComponent } from './settings/settings.component';
@@ -25,7 +24,6 @@ import { RecieveBulkComponent } from './recieve-bulk/recieve-bulk.component';
     MainComponent,
     TopmenuComponent,
     ReplaceVendorComponent,
-    ConfirmationDialog,
     CancelPolineComponent,
     SettingsComponent,
     RecieveBulkComponent,
@@ -50,7 +48,6 @@ import { RecieveBulkComponent } from './recieve-bulk/recieve-bulk.component';
     AppComponent
   ],
   entryComponents: [
-    ConfirmationDialog
   ]
 })
 export class AppModule { }

@@ -36,7 +36,6 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   private vendorSearchString = ""
   private showPoLines = true; //Styrer om poline vises/skjules
   private showAllPolines: boolean = false; //Skal alle polines vises eller kun polines filtreret på settings name
-  poLineForm: FormGroup;
   vendorsForm: FormGroup;
   pageLoading = false;
   private selectedPoLine: Entity;
@@ -58,7 +57,6 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.pageLoading = true;
     this.appService.setTitle('PO Lines - replace vendor');
-    this.initFormGroups();
     this.initSettings();
   }
 
@@ -75,13 +73,6 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
         this.showAllPolines = true;
       }
       this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
-    });
-  }
-
-  //:TODO:: Det er crap:
-  private initFormGroups() {
-    this.poLineForm = this.formBuilder.group({
-      selectedCountries: new FormArray([])
     });
   }
 
@@ -177,6 +168,12 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   private extract260bText(bibData){
     let regExp = new RegExp("\<datafield.*tag\=\"260.*?\"b\"\>(.*?)\<\/subfield\>");//Find: <datafield....tag="260  -> Find first "b">GRAB FROM HERE UNTIL</subfield>
     var field260b = regExp[Symbol.match](bibData.anies)[1];
+    if(field260b){
+      if(field260b.endsWith(',') || field260b.endsWith(';')){
+        const editedText = field260b.slice(0, -1);
+        field260b = editedText.trim();
+      }
+    }
     return field260b;
   }
 
@@ -246,9 +243,6 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
             this.vendorSearchLimitExceeded = true;
           }
         }
-        if(!this.vendorsFound){
-          console.log("No vendors Found");
-        }
       },
       error: (e: RestErrorResponse) => {
         this.alert.error('Failed to get data from search: ' + vendorNameSearchString);
@@ -316,7 +310,7 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
       requestBody: updatedPolineDetails
     };
     this.restService.call(request).subscribe({
-      next: result => {
+      next:() => {
         this.pageLoading = false;
         let truncate = new TruncatePipe();
         this.alert.info('Vendor updated for PO Line' + truncate.transform(updatedPolineDetails.vendor.desc.toString(), 25), {delay :10000} );

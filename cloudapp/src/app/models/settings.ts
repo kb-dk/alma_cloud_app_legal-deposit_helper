@@ -6,5 +6,6 @@ export class Settings {
 
     CANCELLED: boolean = false;
     CLOSED: boolean = false;
-    DELETED: boolean = false
+    DELETED: boolean = false;
+    READY: boolean = false;
 }

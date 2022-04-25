@@ -1,7 +1,7 @@
 {
    "id": "legal-deposit-helper",
    "title": "Legal Deposit helper",
-   "description": "Introducing functionality for handling Legal Deposits using standart Claims and Orders",
+   "description": "Introducing functionality for handling Legal Deposits using standard Claims and Orders",
    "pages": {
       "settings": "/#/settings"
    },

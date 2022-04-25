@@ -154,16 +154,13 @@ onPageLoad = (pageInfo: PageInfo) => {
       method: HttpMethod.DELETE,
       queryParams: {["reason"]: "LIBRARY_CANCELLED"}
     };
-    console.log('Deleting; ' + deleteRequest.url + '  ' +  JSON.stringify(deleteRequest.queryParams))
     this.restService.call(deleteRequest).subscribe({
       next: () => {
-        console.log('Cancelled: ' + description);
         this.deletedOK.push(description);
       },
       error: (e: RestErrorResponse) => {
         const descAndErrorMessage = description.substring(0,25) + 'Error: ' + e.message;
         this.deletedError.push(descAndErrorMessage);
-        console.log('Cancelled Error: ' + descAndErrorMessage);
       },
     });
   }
@@ -185,7 +182,6 @@ onPageLoad = (pageInfo: PageInfo) => {
   }
 
   newDeletePoline(id: string, description: string, link: string): FormGroup {
-    console.log('newDeletePoline: ' + link);
     return this.formBuilder.group({
       id: id,
       description: description,
@@ -198,7 +194,6 @@ onPageLoad = (pageInfo: PageInfo) => {
   }
 
   addDeletePoLine(id: string, description: string, link: string) {
-    console.log('addDelete: poLineDetailsLink: ' + link)
     this.deletePolines().push(this.newDeletePoline(id, description, link));
   }
 

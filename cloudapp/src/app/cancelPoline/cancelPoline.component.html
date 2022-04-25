@@ -1,28 +1,30 @@
 <app-topmenu>
     <div buttons>
-        <button mat-flat-button type="button" color="secondary" (click)="refreshPage()">Refresh</button>
+        <button mat-flat-button type="button" color="secondary" (click)="refreshPage()">Clear</button>
     </div>
 </app-topmenu>
 
 <div *ngIf="pageIsShowingPolines else notAPolinePage">
-    <mat-card>
-        <mat-card-header>
-            <mat-card-title>Please select PO Lines to cancel</mat-card-title>
-            <mat-card-subtitle>{{selectPolinesSubtitle}}</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-            <button class="linkButton all" (click)="selectAllGui()">Select all</button>
-            <form [formGroup]="allPolinesForm" (ngSubmit)="onSubmit()">
-                <div formArrayName="allPolines">
-                    <div *ngFor="let allPoLine of allPolines().controls; let allPolinesIndex=index">
-                        <div class="selectPoline" [formGroupName]='allPolinesIndex'>
-                            <button class="linkButton" (click)="removeFromAllPoLine(allPolinesIndex)">Select</button>{{allPoLine.get('description').value| truncate : 40}}
+    <div *ngIf="deletedOK.length==0 && deletedError.length==0">
+        <mat-card>
+            <mat-card-header>
+                <mat-card-title>Please select PO Lines to cancel</mat-card-title>
+                <mat-card-subtitle>{{selectPolinesSubtitle}}</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+                <button class="linkButton all" (click)="selectAllGui()">Select all</button>
+                <form [formGroup]="allPolinesForm" (ngSubmit)="onSubmit()">
+                    <div formArrayName="allPolines">
+                        <div *ngFor="let allPoLine of allPolines().controls; let allPolinesIndex=index">
+                            <div class="selectPoline" [formGroupName]='allPolinesIndex'>
+                                <button class="linkButton" (click)="removeFromAllPoLine(allPolinesIndex)">Select</button>{{allPoLine.get('description').value| truncate : 40}}
+                            </div>
                         </div>
                     </div>
-                </div>
-            </form>
-        </mat-card-content>
-    </mat-card>
+                </form>
+            </mat-card-content>
+        </mat-card>
+    </div>
     <br>
     <mat-card *ngIf="deletePolines().length>0">
         <mat-card-header>
@@ -49,12 +51,12 @@
     <div *ngIf="deletedOK.length>0 || deletedError.length>0">
         <mat-card>
             <mat-card-header>
-                <mat-card-title>Status</mat-card-title>
+                <mat-card-title>Status for cancellation:</mat-card-title>
             </mat-card-header>
             <mat-card-content>
                 <mat-card-subtitle><b class="bold-weight">{{deletedOK.length}} </b>PO Lines Deleted OK:</mat-card-subtitle>
                 <div *ngFor="let tmpDeletedOk of deletedOK">{{tmpDeletedOk | truncate: 25}}</div>
-                <mat-card-subtitle><b class="bold-weight">{{deletedError.length}} </b>PO Lines Falied(Errormessage will show on mouse over!)</mat-card-subtitle>
+                <mat-card-subtitle><b class="bold-weight">{{deletedError.length}} </b>PO Lines <b>FAILED</b>(Errormessage will show on mouse over!)</mat-card-subtitle>
                 <div *ngFor="let tmpDeletedError of deletedError" class="tooltip">
                     {{tmpDeletedError | truncate: 25}}
                     <span class="tooltiptext">{{tmpDeletedError}}</span>

@@ -4,6 +4,11 @@
     </div>
 </app-topmenu>
 
+<div class="loading-shade" *ngIf="pageLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+</div>
+
+
 <div *ngIf="pageIsShowingPolines else notAPolinePage">
     <div *ngIf="deletedOK.length==0 && deletedError.length==0">
         <mat-card>

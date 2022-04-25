@@ -28,7 +28,7 @@ export class CancelPolineComponent implements OnInit {
   private deletePolinesForm: FormGroup;
   poLineProcessed = 0;
   private polinesNumberOfErrors: 0;
-  loading = false;
+  pageLoading = false;
   private pageLoad$: Subscription;
   private pageEntities: Entity[];
   private pageIsShowingPolines: boolean = false;
@@ -58,7 +58,7 @@ export class CancelPolineComponent implements OnInit {
     this.deletePolinesForm=this.formBuilder.group({
       deletePolines: this.formBuilder.array([]) ,
     });
-    this.loading = true;
+    this.pageLoading = true;
     this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
   }
 
@@ -94,11 +94,11 @@ export class CancelPolineComponent implements OnInit {
 onPageLoad = (pageInfo: PageInfo) => {
     this.pageEntities = pageInfo.entities;
     this.loadPolineDetails();
-    this.loading = false;
+    this.pageLoading = false;
   }
 
   loadPolineDetails() {
-    this.loading = true;
+    this.pageLoading = true;
     this.poLineProcessed = 0;
     this.polinesNumberOfErrors = 0
     if(this.pageEntities.length>0 && this.pageEntities[0].link.toString().includes('/acq/po-lines')) {
@@ -127,14 +127,14 @@ onPageLoad = (pageInfo: PageInfo) => {
       },
       error: (e: RestErrorResponse) => {
         console.error(e);
-        this.loading = false;
+        this.pageLoading = false;
       },
-      complete: () => this.loading = false,
+      complete: () => this.pageLoading = false,
     });
   }
 
   cancelSelectedPolines() {
-    this.loading = true;
+    this.pageLoading = true;
     const numberOfDeletePolines = this.deletePolines().length;
     for (let i = 0; i < numberOfDeletePolines; i++) {
       const abstractControl = this.deletePolines().get([i]);
@@ -144,7 +144,7 @@ onPageLoad = (pageInfo: PageInfo) => {
       }
     this.allPolines().clear()
     this.deletePolines().clear();
-    this.loading = false;
+    this.pageLoading = false;
   }
 
 

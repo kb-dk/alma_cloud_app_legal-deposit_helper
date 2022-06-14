@@ -10,6 +10,11 @@ button.linkButton{
   cursor: pointer;
 }
 
+.statusItems {
+position: relative;
+  top: -1em;
+}
+
 button.all{
   position: relative;
   top: -1em;
@@ -24,7 +29,7 @@ div.selectPoline {
 .tooltip {
   position: relative;
   display: block;
-  width: 12em;
+  width: 13em;
   border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
 }
 

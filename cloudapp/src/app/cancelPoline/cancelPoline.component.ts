@@ -1,21 +1,19 @@
 import {Component, OnInit} from '@angular/core';
+import {Subscription} from 'rxjs';
+import {AppService} from '../app.service';
+import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
+
 
 import {
   AlertService,
   CloudAppEventsService,
-  CloudAppRestService, CloudAppSettingsService,
+  CloudAppRestService,
   Entity,
   HttpMethod,
   PageInfo,
   Request,
   RestErrorResponse
 } from '@exlibris/exl-cloudapp-angular-lib';
-import {Subscription} from 'rxjs';
-import {AppService} from '../app.service';
-import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
-import SettingStatusClass from "../models/settings.constants";
-import {Settings} from "../models/settings";
-
 @Component({
   selector: 'app-cancel-poline',
   templateUrl: './cancelPoline.component.html',
@@ -26,23 +24,22 @@ export class CancelPolineComponent implements OnInit {
   private selectPolinesSubtitle: String
   private allPolinesForm: FormGroup;
   private deletePolinesForm: FormGroup;
-  poLineProcessed = 0;
+  private poLineProcessed = 0;
   private polinesNumberOfErrors: 0;
-  pageLoading = false;
+  private remainsToBeLoaded: number; //counter, helping to control pageLoading overlay.
+  private pageLoading: boolean;
   private pageLoad$: Subscription;
   private pageEntities: Entity[];
   private pageIsShowingPolines: boolean = false;
   private poLineDetails: any[] =[];//All polineDetails objects.
   private deletedOK: string[] = [];
   private deletedError: string[] = [];
-  private settings: Settings;
 
   constructor(private restService: CloudAppRestService,
               private appService: AppService,
               private formBuilder: FormBuilder,
               private alert: AlertService,
-              private eventsService: CloudAppEventsService,
-              private settingsService: CloudAppSettingsService) {
+              private eventsService: CloudAppEventsService) {
   }
 
   onSubmit() {
@@ -50,57 +47,29 @@ export class CancelPolineComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.initSettings();
+    this.pageLoading = true;
     this.appService.setTitle('PO Lines - cancel');
+    this.REMOVE_STATUSES = ["DELETED", "CLOSED", "CANCELLED"];//Pointless to mess with these
+    this.selectPolinesSubtitle= 'PO Lines having status DELETED ,CLOSED and CANCELLED are not shown!';
     this.allPolinesForm=this.formBuilder.group({
       allPolines: this.formBuilder.array([]) ,
     });
     this.deletePolinesForm=this.formBuilder.group({
       deletePolines: this.formBuilder.array([]) ,
     });
-    this.pageLoading = true;
     this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
   }
 
-  private initSettings() {
-    this.settingsService.get().subscribe(settings => {
-      this.settings = settings as Settings;
-      SettingStatusClass.statusses.forEach(tmpStatus => {
-        if(settings[tmpStatus.status]){ //if found and true, we use the status as filter in REMOVE_STATUSES
-          this.REMOVE_STATUSES.push(tmpStatus.status);
-        }
-      });
-      if(this.REMOVE_STATUSES.length===1){
-        this.selectPolinesSubtitle= 'PO Lines having status ' +  this.REMOVE_STATUSES[0] + ' are not shown!';
-      }
-      else if(this.REMOVE_STATUSES.length>1){
-        var statusListString:string = 'PO Lines having status ' + this.REMOVE_STATUSES[0];
-        for (let i = 1; i < this.REMOVE_STATUSES.length; i++) {
-          if(i === this.REMOVE_STATUSES.length-1){
-            statusListString += ' and ';
-            statusListString += this.REMOVE_STATUSES[i];
-            statusListString += '.';
-          } else {
-            statusListString += ' ,';
-            statusListString += this.REMOVE_STATUSES[i];
-          }
-        }
-        statusListString += ' are not shown!';
-        this.selectPolinesSubtitle= statusListString;
-      }
-    });
-  }
-
-onPageLoad = (pageInfo: PageInfo) => {
+  onPageLoad = (pageInfo: PageInfo) => {
     this.pageEntities = pageInfo.entities;
     this.loadPolineDetails();
-    this.pageLoading = false;
   }
 
   loadPolineDetails() {
+    this.remainsToBeLoaded = this.pageEntities.length;
     this.pageLoading = true;
     this.poLineProcessed = 0;
-    this.polinesNumberOfErrors = 0
+    this.polinesNumberOfErrors = 0;
     if(this.pageEntities.length>0 && this.pageEntities[0].link.toString().includes('/acq/po-lines')) {
       this.pageEntities.forEach(poline => {
         this.getAndFilterPolinesByStatus(poline);
@@ -119,32 +88,37 @@ onPageLoad = (pageInfo: PageInfo) => {
     };
     this.restService.call(request).subscribe({
       next: result => {
+        this.remainsToBeLoaded--;
         const polineStatus = result.status.value;
         if(!(this.REMOVE_STATUSES.some(status => polineStatus === status))){//filter by status
           this.addAllPoLine(entity.id,entity.description, entity.link);
           this.poLineDetails.push(result); //Save full polineDetail
         }
+        if(this.remainsToBeLoaded === 0){
+          this.pageLoading= false;
+        }
       },
       error: (e: RestErrorResponse) => {
         console.error(e);
-        this.pageLoading = false;
+        if(this.remainsToBeLoaded === 0){
+          this.pageLoading= false;
+        }
       },
-      complete: () => this.pageLoading = false,
     });
   }
 
   cancelSelectedPolines() {
     this.pageLoading = true;
     const numberOfDeletePolines = this.deletePolines().length;
+    this.remainsToBeLoaded = numberOfDeletePolines;
     for (let i = 0; i < numberOfDeletePolines; i++) {
       const abstractControl = this.deletePolines().get([i]);
       const tmpLink = abstractControl.get('link').value;
       const tmpDescription = abstractControl.get('description').value;
-        this.deletePoline(tmpLink, tmpDescription);
-      }
+      this.deletePoline(tmpLink, tmpDescription);
+    }
     this.allPolines().clear()
     this.deletePolines().clear();
-    this.pageLoading = false;
   }
 
 
@@ -156,11 +130,19 @@ onPageLoad = (pageInfo: PageInfo) => {
     };
     this.restService.call(deleteRequest).subscribe({
       next: () => {
+        this.remainsToBeLoaded--;
         this.deletedOK.push(description);
+        if(this.remainsToBeLoaded === 0){
+          this.pageLoading = false;
+        }
       },
       error: (e: RestErrorResponse) => {
+        this.remainsToBeLoaded--;
         const descAndErrorMessage = description.substring(0,25) + 'Error: ' + e.message;
         this.deletedError.push(descAndErrorMessage);
+        if(this.remainsToBeLoaded === 0){
+          this.pageLoading = false;
+        }
       },
     });
   }
@@ -225,9 +207,26 @@ onPageLoad = (pageInfo: PageInfo) => {
     this.deletePolines().clear();
   }
 
-  refreshPage(){
+  clear(){
     this.deletedOK = [];
     this.deletedError = []
-    this.ngOnInit();
+    this.refresh();
+  }
+
+  refresh(){
+    this.eventsService.refreshPage().subscribe({
+      next: () => {
+        this.alert.success('Success!')
+      },
+      error: e => {
+        console.error(e);
+        this.alert.error('Failed to refresh page');
+      },
+      complete: () =>{
+        this.ngOnInit()
+      }
+    });
+
   }
 }
+

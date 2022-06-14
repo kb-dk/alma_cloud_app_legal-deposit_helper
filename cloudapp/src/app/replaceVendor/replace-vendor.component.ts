@@ -14,7 +14,6 @@ import {
 import {AppService} from "../app.service";
 import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
 import {MatRadioChange} from "@angular/material/radio";
-import * as url from "url";
 import {Settings} from "../models/settings";
 import {TruncatePipe} from "../pipes/truncate.pipe";
 
@@ -31,13 +30,13 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   private noVendorsFoundText= "No vendors found. Please change search criterion and try again ";
   private vendorsFound = false;
   private showSearchVendorResult= false;
-
-  private selectedVendorLink: url = '';
+  private remainsToBeLoaded: number; //counter, helping to control pageLoading overlay.
+  private selectedVendorLink: String= '';
   private vendorSearchString = ""
   private showPoLines = true; //Styrer om poline vises/skjules
   private showAllPolines: boolean = false; //Skal alle polines vises eller kun polines filtreret på settings name
   vendorsForm: FormGroup;
-  pageLoading = false;
+  private pageLoading = false;
   private selectedPoLine: Entity;
   private polineDetails: any;
   private selectedVendorDetailsJson: any;
@@ -67,11 +66,7 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   private initSettings() {
     this.settingsService.get().subscribe(settings => {
       this.settings = settings as Settings;
-      if (this.settings.polineVendorNameFilter && this.settings.polineVendorNameFilter.length > 0) {
-        this.showAllPolines = false;
-      } else {
-        this.showAllPolines = true;
-      }
+      this.showAllPolines = !(this.settings.polineVendorNameFilter && this.settings.polineVendorNameFilter.length > 0);
       this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
     });
   }
@@ -82,11 +77,11 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
     if(this.pageEntities.length>0 && this.pageEntities[0].link.toString().includes('/acq/po-lines')) {
       this.pageIsShowingPolines = true;
       if(this.settings.polineVendorNameFilter && this.settings.polineVendorNameFilter.length > 0){ //if vendorName filter is defined in "Settings"
+        this.remainsToBeLoaded = this.pageEntities.length;
         pageInfo.entities.forEach(tmpEntity => {
           this.filterPolineUsingVendorName(tmpEntity);
         })
-        this.pageLoading = false;
-      } else { //If the two lines surrounding this are combined things will mess up!
+      } else { //No filtersetting => pageloading is done.
         this.pageLoading = false;
       }
     } else {
@@ -102,15 +97,21 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
     };
     this.restService.call(request).subscribe({
       next: result => {
+        this.remainsToBeLoaded--;
         const polineDesc = result.vendor.desc;
         if(polineDesc.includes(this.settings.polineVendorNameFilter)){
           this.filteredPolines.push(entity);
+        }
+        if(this.remainsToBeLoaded === 0){
+          this.pageLoading= false;
         }
       },
       error: (e: RestErrorResponse) => {
         this.alert.error('getPolineDetails; Failed to get data');
         console.error(e);
-        this.pageLoading = false;
+        if(this.remainsToBeLoaded === 0){
+          this.pageLoading= false;
+        }
       }
     });
   }
@@ -262,7 +263,7 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
     this.getSelectedVendorDetails(link)
   }
 
-  private getSelectedVendorDetails(link: url) {
+  private getSelectedVendorDetails(link: any) {
     var request: Request = {
       url: link.toString(),
       method: HttpMethod.GET
@@ -326,7 +327,7 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
   }
 
 //*******************************************************************************************************************
-//Misc
+//TODO: Not working: https://developers.exlibrisgroup.com/forums/topic/refreshpage-function-challenge/#post-73315
   refreshPage = () => {
     this.pageLoading = true;
     this.eventsService.refreshPage().subscribe({

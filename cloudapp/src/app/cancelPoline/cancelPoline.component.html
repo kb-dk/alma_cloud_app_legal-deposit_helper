@@ -1,15 +1,13 @@
 <app-topmenu>
     <div buttons>
-        <button mat-flat-button type="button" color="secondary" (click)="refreshPage()">Clear</button>
+        <button mat-flat-button type="button" color="secondary" (click)="clear()">Clear</button>
     </div>
 </app-topmenu>
 
-<div class="loading-shade" *ngIf="pageLoading">
-    <mat-spinner diameter="50"></mat-spinner>
-</div>
-
-
 <div *ngIf="pageIsShowingPolines else notAPolinePage">
+    <div class="loading-shade" *ngIf="pageLoading">
+        <mat-spinner diameter="50"></mat-spinner>
+    </div>
     <div *ngIf="deletedOK.length==0 && deletedError.length==0">
         <mat-card>
             <mat-card-header>
@@ -59,12 +57,13 @@
                 <mat-card-title>Status for cancellation:</mat-card-title>
             </mat-card-header>
             <mat-card-content>
-                <mat-card-subtitle><b class="bold-weight">{{deletedOK.length}} </b>PO Lines Deleted OK:</mat-card-subtitle>
-                <div *ngFor="let tmpDeletedOk of deletedOK">{{tmpDeletedOk | truncate: 25}}</div>
-                <mat-card-subtitle><b class="bold-weight">{{deletedError.length}} </b>PO Lines <b>FAILED</b>(Errormessage will show on mouse over!)</mat-card-subtitle>
-                <div *ngFor="let tmpDeletedError of deletedError" class="tooltip">
-                    {{tmpDeletedError | truncate: 25}}
-                    <span class="tooltiptext">{{tmpDeletedError}}</span>
+                <div *ngIf="deletedOK.length>0">
+                    <mat-card-subtitle><span class="extra-bold-weight">{{deletedOK.length}} </span>PO Lines Cancelled OK:</mat-card-subtitle>
+                    <div class="statusItems" *ngFor="let tmpDeletedOk of deletedOK">* {{tmpDeletedOk | truncate: 25}}</div>
+                </div>
+                <div *ngIf="deletedError.length>0">
+                    <mat-card-subtitle><span class="extra-bold-weight">{{deletedError.length}} </span>PO Lines <b>FAILED</b>(Errormessage will show on mouse over!)</mat-card-subtitle>
+                    <div *ngFor="let tmpDeletedError of deletedError" class="tooltip statusItems">* {{tmpDeletedError | truncate: 25}}<span class="tooltiptext">{{tmpDeletedError}}</span></div>
                 </div>
             </mat-card-content>
         </mat-card>

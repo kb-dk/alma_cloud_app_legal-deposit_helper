@@ -48,24 +48,6 @@
             </mat-card-content>
         </mat-card>
 
-        <br>
-
-        <mat-card class="input-card input-card-cancel">
-            <mat-card-header>
-                <mat-card-title>PO Lines - cancel:</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-                <label>Do not show PO Lines with status:</label><br>
-                <section class="settings-section">
-                    <div>
-                        <mat-checkbox formControlName="CANCELLED">Cancelled</mat-checkbox><br>
-                        <mat-checkbox formControlName="DELETED">Deleted</mat-checkbox><br>
-                        <mat-checkbox formControlName="CLOSED">Closed</mat-checkbox><br>
-                        <mat-checkbox formControlName="READY">Ready</mat-checkbox><br>
-                    </div>
-                </section>
-            </mat-card-content>
-        </mat-card>
     </form>
     <pre>{{ form.value | json }}</pre>
 </div>

@@ -1,6 +1,6 @@
 <app-topmenu xmlns="http://www.w3.org/1999/html">
     <div buttons>
-        <button mat-flat-button color="secondary" [disabled]="pageEntities == 0" (click)="clear()">Clear</button>
+        <button mat-flat-button color="secondary" [disabled]="pageEntities.length == 0" (click)="clear()">Clear</button>
     </div>
 </app-topmenu>
 

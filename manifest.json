@@ -1,7 +1,7 @@
 {
    "id": "legal-deposit-helper",
    "title": "Legal Deposit helper",
-   "subtitle": "Cancel poLine, replace vendor and recieve bulk of legal deposits",
+   "subtitle": "Cancel poLine, replace vendor and receive bulk of legal deposits",
    "author": "Royal Danish Library, Denmark",
    "description": "Introducing functionality for handling Legal Deposits using standard Claims and Orders",
    "pages": {

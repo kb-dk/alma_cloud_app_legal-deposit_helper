@@ -24,24 +24,24 @@ import {TruncatePipe} from "../pipes/truncate.pipe";
 })
 export class ReplaceVendorComponent implements OnInit, OnDestroy {
   private pageLoad$: Subscription;
-  private pageEntities: Entity[];
-  private pageIsShowingPolines: boolean = false;
-  private filteredPolines: Entity[];
-  private noVendorsFoundText= "No vendors found. Please change search criterion and try again ";
-  private vendorsFound = false;
-  private showSearchVendorResult= false;
+  pageEntities: Entity[];
+  pageIsShowingPolines: boolean = false;
+  filteredPolines: Entity[];
+  noVendorsFoundText= "No vendors found. Please change search criterion and try again ";
+  vendorsFound = false;
+  showSearchVendorResult= false;
   private remainsToBeLoaded: number; //counter, helping to control pageLoading overlay.
-  private selectedVendorLink: String= '';
-  private vendorSearchString = ""
-  private showPoLines = true; //Styrer om poline vises/skjules
-  private showAllPolines: boolean = false; //Skal alle polines vises eller kun polines filtreret på settings name
+  selectedVendorLink: String= '';
+  vendorSearchString = ""
+  showPoLines = true; //Styrer om poline vises/skjules
+  showAllPolines: boolean = false; //Skal alle polines vises eller kun polines filtreret på settings name
   vendorsForm: FormGroup;
-  private pageLoading = false;
-  private selectedPoLine: Entity;
+  pageLoading = false;
+  selectedPoLine: Entity;
   private polineDetails: any;
   private selectedVendorDetailsJson: any;
-  private settings: Settings;
-  private vendorSearchLimitExceeded: boolean = false;
+  settings: Settings;
+  vendorSearchLimitExceeded: boolean = false;
 
   constructor(
     private appService: AppService,
@@ -282,7 +282,7 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
 
 //*************************************************************************************************************************************
 //Replace vendor
-  private replaceVendorForPoline() {
+  replaceVendorForPoline() {
     let request: Request = {
       url: this.selectedPoLine.link,
       method: HttpMethod.GET

@@ -21,19 +21,19 @@ import {
 })
 export class CancelPolineComponent implements OnInit {
   private REMOVE_STATUSES = [];
-  private selectPolinesSubtitle: String
-  private allPolinesForm: FormGroup;
-  private deletePolinesForm: FormGroup;
+  selectPolinesSubtitle: String
+  allPolinesForm: FormGroup;
+  deletePolinesForm: FormGroup;
   private poLineProcessed = 0;
   private polinesNumberOfErrors: 0;
   private remainsToBeLoaded: number; //counter, helping to control pageLoading overlay.
-  private pageLoading: boolean;
+  pageLoading: boolean;
   private pageLoad$: Subscription;
   private pageEntities: Entity[];
-  private pageIsShowingPolines: boolean = false;
+  pageIsShowingPolines: boolean = false;
   private poLineDetails: any[] =[];//All polineDetails objects.
-  private deletedOK: string[] = [];
-  private deletedError: string[] = [];
+  deletedOK: string[] = [];
+  deletedError: string[] = [];
 
   constructor(private restService: CloudAppRestService,
               private appService: AppService,

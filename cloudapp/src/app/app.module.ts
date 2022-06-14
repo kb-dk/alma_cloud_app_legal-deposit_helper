@@ -3,7 +3,7 @@ import {HttpClientModule} from '@angular/common/http';
 import { BrowserModule, Title } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule, getTranslateModule, AlertModule, MenuModule } from '@exlibris/exl-cloudapp-angular-lib';
-import {FormBuilder, FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { SelectEntitiesModule } from 'eca-components';
 
 import { AppComponent } from './app.component';
@@ -14,7 +14,7 @@ import {TruncatePipe} from "./pipes/truncate.pipe";
 import {ReplaceVendorComponent} from "./replaceVendor/replace-vendor.component";
 import { SettingsComponent } from './settings/settings.component';
 import {CancelPolineComponent} from "./cancelPoline/cancelPoline.component";
-import { RecieveBulkComponent } from './recieve-bulk/recieve-bulk.component';
+import { ReceiveBulkComponent } from './recieve-bulk/receive-bulk.component';
 
 
 @NgModule({
@@ -26,7 +26,7 @@ import { RecieveBulkComponent } from './recieve-bulk/recieve-bulk.component';
     ReplaceVendorComponent,
     CancelPolineComponent,
     SettingsComponent,
-    RecieveBulkComponent,
+    ReceiveBulkComponent,
   ],
   imports: [
     MaterialModule,

@@ -4,13 +4,13 @@ import {MainComponent} from './main/main.component';
 import {ReplaceVendorComponent} from "./replaceVendor/replace-vendor.component";
 import {SettingsComponent} from "./settings/settings.component";
 import {CancelPolineComponent} from "./cancelPoline/cancelPoline.component";
-import {RecieveBulkComponent} from "./recieve-bulk/recieve-bulk.component";
+import {ReceiveBulkComponent} from "./recieve-bulk/receive-bulk.component";
 
 const routes: Routes = [
   { path: '', component: MainComponent },
   { path: 'app-replace-vendor', component: ReplaceVendorComponent },
   { path: 'app-cancel-poline', component: CancelPolineComponent },
-  { path: 'app-recieve-bulk', component: RecieveBulkComponent },
+  { path: 'app-receive-bulk', component: ReceiveBulkComponent },
   { path: 'settings', component: SettingsComponent },
 ];
 

@@ -1,0 +1,28 @@
+/*
+.bulkTypeInput {
+  padding-right: 1em;
+  width: 5em;
+}*/
+
+.mat-form-field:not(.mat-form-field-has-label) .mat-form-field-infix {
+  top: -0.2em;
+  padding-right: 1em;
+  width: 5em;
+}
+
+.mat-form-field-infix {
+  width: 5em;
+  padding: 0 0 0.75em 0;
+}
+
+/*
+Only made for fixing bug regarding
+reload, where styling vanishes
+*/
+input.searchInput{
+  border: 1px solid black;
+  display: block;
+  margin-top: 0.5em;
+  width: 12em;
+}
+

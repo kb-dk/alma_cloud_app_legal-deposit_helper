@@ -14,7 +14,9 @@ import {TruncatePipe} from "./pipes/truncate.pipe";
 import {ReplaceVendorComponent} from "./replaceVendor/replace-vendor.component";
 import { SettingsComponent } from './settings/settings.component';
 import {CancelPolineComponent} from "./cancelPoline/cancelPoline.component";
-import { ReceiveBulkComponent } from './recieve-bulk/receive-bulk.component';
+import { ReceiveBulkComponent } from './receive-bulk/receive-bulk.component';
+import { TranslateComponent } from './translate/translate.component';
+import {TranslateModule} from "@ngx-translate/core";
 
 
 @NgModule({
@@ -27,6 +29,7 @@ import { ReceiveBulkComponent } from './recieve-bulk/receive-bulk.component';
     CancelPolineComponent,
     SettingsComponent,
     ReceiveBulkComponent,
+    TranslateComponent,
   ],
   imports: [
     MaterialModule,
@@ -40,6 +43,7 @@ import { ReceiveBulkComponent } from './recieve-bulk/receive-bulk.component';
     AlertModule,
     SelectEntitiesModule,
     MenuModule,
+    TranslateModule,
   ],
   providers: [
     Title

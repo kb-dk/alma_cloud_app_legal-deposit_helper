@@ -3,6 +3,8 @@ import { AppService } from '../app.service';
 import {FormArray, FormGroup} from '@angular/forms';
 import { AlertService, CloudAppSettingsService, FormGroupUtil } from '@exlibris/exl-cloudapp-angular-lib';
 import { Settings } from '../models/settings';
+import {TranslateService} from "@ngx-translate/core";
+
 
 @Component({
   selector: 'app-settings',
@@ -13,10 +15,10 @@ export class SettingsComponent implements OnInit {
   form: FormGroup;
   formArray: FormArray;
   saving = false;
-
   constructor(
       private appService: AppService,
       private settingsService: CloudAppSettingsService,
+      private translate: TranslateService,
       private alert: AlertService,
   ) { }
 
@@ -42,4 +44,5 @@ export class SettingsComponent implements OnInit {
   remove() {//resets settings - handy for development use.
     this.settingsService.remove().subscribe( () => console.log('removed') );
   }
+
 }

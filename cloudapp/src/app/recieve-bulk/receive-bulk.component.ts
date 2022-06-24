@@ -9,8 +9,8 @@ import {
 import {Settings} from "../models/settings";
 import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 import {AppService} from "../app.service";
-import {TruncatePipe} from "../pipes/truncate.pipe";
 import {isNumeric} from "rxjs/internal-compatibility";
+import {TranslateService} from "@ngx-translate/core";
 
 @Component({
   selector: 'app-receive-bulk',
@@ -25,7 +25,7 @@ export class ReceiveBulkComponent implements OnInit {
   settings: Settings;
   vendorsForm: FormGroup;
   bulkTypesForm: FormGroup;
-  noVendorsFoundText= "No vendors found. Please change search criterion and try again ";
+  noVendorsFoundText: string ;
   vendorsFound = false;
   private selectedVendorLink: any;
   vendorIsSelected: boolean = false;
@@ -41,13 +41,20 @@ export class ReceiveBulkComponent implements OnInit {
     private restService: CloudAppRestService,
     private formBuilder: FormBuilder,
     private alert: AlertService,
+    private translate: TranslateService,
     private settingsService: CloudAppSettingsService,
   ) {
   }
 
   ngOnInit(): void {
-    this.appService.setTitle('Receive Material Bulk');
-    this.initBulktypes();
+    this.settingsService.get().subscribe((settings)=>{
+      this.settings = settings as Settings;
+      this.translate.use(this.settings.language).subscribe(()=> {
+      this.initBulktypes();
+      this.appService.setTitle(this.translate.instant('Title.RecieveBulk'));
+      this.noVendorsFoundText = this.translate.instant('RecieveBulk.NoVendorsFoundText');
+      });
+    });
     this.initVendors();
     this.initGuiSettings();
   }
@@ -57,7 +64,7 @@ export class ReceiveBulkComponent implements OnInit {
     this.showSearchVendorResult = false;
     this.vendorIsSelected = false;
     this.vendorSearchString = '';
-    this.initSettings();
+    this.bulkIsEmpty = true;
     this.initDatePicker();
   }
 
@@ -68,17 +75,9 @@ export class ReceiveBulkComponent implements OnInit {
     this.registerDate = new FormControl(new Date(), Validators.required);
   }
 
-  private initSettings() {
-    this.settingsService.get().subscribe(settings => {
-      this.settings = settings as Settings;
-      // this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
-    });
-  }
-
   search(vendorNameSearchString: string) {
     this.pageLoading = true;
     this.vendorSearchString = vendorNameSearchString;
-    this.showSearchVendorResult = true;
     this.vendorSearchLimitExceeded = false;
     this.searchVendors(vendorNameSearchString);
   }
@@ -98,6 +97,7 @@ export class ReceiveBulkComponent implements OnInit {
     this.restService.call(request).subscribe({
       next: result => {
         this.initVendors();
+        this.showSearchVendorResult = true;
         const total_record_count = parseInt(result.total_record_count)
         const vendorCodeFilter = this.settings.vendorCodeFilter;
         if(total_record_count > 0){
@@ -142,11 +142,11 @@ export class ReceiveBulkComponent implements OnInit {
       requestBody: newVendor,
     };
     this.restService.call(request).subscribe({
-      next: result => {
+      next: () => {
         this.pageLoading = false;
-        this.alert.info('Bulk received for Vendor: ' + this.selectedVendorDetailsJson.name + ".", {delay :10000} );
+        this.alert.info(this.translate.instant('ReceiveBulk.BulkReceivedInfo') +' : ' + this.selectedVendorDetailsJson.name + ".", {delay :10000} );
         this.clear()
-        // this.refreshPage();
+        this.initBulktypes();
       },
       error: (e: RestErrorResponse) => {
         this.alert.error(e.message.split(";")[0]);
@@ -214,14 +214,13 @@ export class ReceiveBulkComponent implements OnInit {
     this.bulkTypesForm = this.formBuilder.group({
       bulkTypes: this.formBuilder.array([]),
     });
-    this.bulkTypes().push(this.newBulkType('Booklet', 'Booklet'));
-    this.bulkTypes().push(this.newBulkType('Box', 'Box'));
-    this.bulkTypes().push(this.newBulkType('Envelope', 'Envelope'));
-    this.bulkTypes().push(this.newBulkType('Parcel', 'Parcel'));
-    this.bulkTypes().push(this.newBulkType('Pallet', 'Pallet'));
-    this.bulkTypes().push(this.newBulkType('Bag', 'Bag'));
-    this.bulkTypes().push(this.newBulkType('Tube', 'Tube'));
-    this.bulkTypes().push(this.newBulkType('Pick up shelf', 'Pick up shelf'));
+    this.bulkTypes().push(this.newBulkType(this.translate.instant('Materialtype.BOOKLET_SHORT'), this.translate.instant('Materialtype.BOOKLET')));
+    this.bulkTypes().push(this.newBulkType(this.translate.instant('Materialtype.BOX_SHORT'), this.translate.instant('Materialtype.BOX')));
+    this.bulkTypes().push(this.newBulkType(this.translate.instant('Materialtype.ENVELOPE_SHORT'), this.translate.instant('Materialtype.ENVELOPE')));
+    this.bulkTypes().push(this.newBulkType(this.translate.instant('Materialtype.PARCEL_SHORT'), this.translate.instant('Materialtype.PARCEL')));
+    this.bulkTypes().push(this.newBulkType(this.translate.instant('Materialtype.PALLET_SHORT'), this.translate.instant('Materialtype.PALLET')));
+    this.bulkTypes().push(this.newBulkType(this.translate.instant('Materialtype.TUBE_SHORT'), this.translate.instant('Materialtype.TUBE')));
+    this.bulkTypes().push(this.newBulkType(this.translate.instant('Materialtype.PICK_UP_SHELF_SHORT'), this.translate.instant('Materialtype.PICK_UP_SHELF')));
   }
 
   newBulkType(code: string, name: string): FormGroup {
@@ -265,9 +264,9 @@ export class ReceiveBulkComponent implements OnInit {
 
     var newNote: String = '';
     if (this.bulkIsEmpty) {
-      newNote = 'Intet-at-levere modtaget ' + formatDateForNote();
+      newNote = this.translate.instant('RecieveBulk.NoDeliveryRecived')+ ' ' + formatDateForNote();
     } else {
-      newNote = 'Bulk received ' + formatDateForNote() + ':';
+      newNote = this.translate.instant('ReceiveBulk.BulkReceived') + ' ' + formatDateForNote() + ':';
       this.bulkTypes().controls.forEach(control => {
         if (control.value.input !== '') {
           newNote = newNote + control.value.input + ' ' + control.value.code + ', ';
@@ -285,7 +284,8 @@ export class ReceiveBulkComponent implements OnInit {
 
     function formattedDate() {
       const year = String(selectedDate.getFullYear()).substring(2);
-      const month = selectedDate.getMonth()>9?''+ selectedDate.getMonth() : '0' + selectedDate.getMonth();
+      let actualmonth = selectedDate.getMonth()+1;
+      const month = actualmonth>9?''+ actualmonth : '0' + actualmonth;
       const day = selectedDate.getDate()>9?''+ selectedDate.getDate() : '0' + selectedDate.getDate();
       return year + month + day;
     }

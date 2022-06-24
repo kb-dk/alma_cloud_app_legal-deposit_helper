@@ -7,8 +7,25 @@
 <div class="loading-shade" *ngIf="saving">
     <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
 </div>
+
+
 <div *ngIf="form">
     <form [formGroup]="form">
+        <mat-card class="input-card">
+            <mat-card-header>
+                <mat-card-title>Language:</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <label>Select language (Only implemented in "Receive Legal Deposit bulk"): </label><br>
+                <section class="settings-section">
+                    <mat-radio-group formControlName="language">
+                        <mat-radio-button class="settings-control" value="en">English</mat-radio-button>
+                        <mat-radio-button class="settings-control" value="da">Dansk</mat-radio-button>
+                    </mat-radio-group>
+                </section>
+            </mat-card-content>
+        </mat-card>
+
         <mat-card class="input-card">
             <mat-card-header>
                 <mat-card-title>PO Lines - replace vendor:</mat-card-title>

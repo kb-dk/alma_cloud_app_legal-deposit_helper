@@ -1,9 +1,4 @@
 <app-topmenu xmlns="http://www.w3.org/1999/html">
-<!--
-    <div buttons>
-        <button mat-flat-button color="secondary" (click)="clear()">Clear</button>
-    </div>
--->
 </app-topmenu>
 
 <div class="loading-shade" *ngIf="pageLoading">
@@ -14,14 +9,14 @@
 <section *ngIf="showSearchVendor">
     <mat-card class="input-card">
         <mat-card-header>
-            <mat-card-title>Find vendor</mat-card-title>
+            <mat-card-title>{{ 'RecieveBulk.FindVendor' | translate }}</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-            <mat-label>Search criteria: </mat-label>
+            <mat-label>{{ 'RecieveBulk.SearchCriteria' | translate }}:</mat-label>
             <input matInput class="searchInput" #searchInput [value]="vendorSearchString" (submit)="search(searchInput.value)">
         </mat-card-content>
         <mat-card-actions>
-            <button mat-raised-button color="primary" (click)="search(searchInput.value)">Search</button>
+            <button mat-raised-button color="primary" (click)="search(searchInput.value)">{{ 'RecieveBulk.Search' | translate }}</button>
         </mat-card-actions>
     </mat-card>
 </section>
@@ -30,14 +25,13 @@
 <section *ngIf="showSearchVendorResult">
     <mat-card class="input-card">
         <mat-card-header>
-            <mat-card-title *ngIf="vendorsFound; else noVendorsFoundHeader"><b>Please select a vendor</b><br> You can also make a new search</mat-card-title>
+            <mat-card-title *ngIf="vendorsFound; else noVendorsFoundHeader"><b>{{ 'RecieveBulk.SelectVendor' | translate }}</b><br> ({{ 'RecieveBulk.NewSearch' | translate }})</mat-card-title>
             <ng-template  #noVendorsFoundHeader>
                 <mat-card-title>{{noVendorsFoundText}}</mat-card-title>
             </ng-template>
         </mat-card-header>
-        <span>this.settings.vendorCodeFilter: </span>{{this.settings.vendorCodeFilter}}
-        <mat-card-subtitle *ngIf="vendorSearchLimitExceeded" class="bold-weight"><b>More than {{settings.vendorSearchLimit}} vendors found! Consider altering your search criteria.</b></mat-card-subtitle>
-        <mat-card-subtitle *ngIf="(this.settings.vendorCodeFilter && this.settings.vendorCodeFilter.length > 0)">Vendor code of search result is filtered with '<b class="bold-weight large">{{settings.vendorCodeFilter}}</b>'. This can be changed in 'Settings'.</mat-card-subtitle>
+        <mat-card-subtitle *ngIf="vendorSearchLimitExceeded" class="bold-weight"><b>{{ 'RecieveBulk.MoreThan1' | translate }} {{settings.vendorSearchLimit}} {{ 'RecieveBulk.MoreThan2' | translate }}.</b></mat-card-subtitle>
+        <mat-card-subtitle *ngIf="(this.settings.vendorCodeFilter && this.settings.vendorCodeFilter.length > 0)">{{ 'RecieveBulk.VendorCodeFilter1' | translate }} '<b class="bold-weight">{{settings.vendorCodeFilter}}</b>'. {{ 'RecieveBulk.VendorCodeFilter2' | translate }}.</mat-card-subtitle>
         <mat-card-content *ngIf="vendors().controls.length>0">
             <form [formGroup]="vendorsForm">
                 <div formArrayName="vendors">
@@ -54,30 +48,29 @@
     </mat-card>
 </section>
 <br>
-
 <section *ngIf="vendorIsSelected">
     <mat-card class="input-card">
         <mat-card-header>
-            <mat-card-title>Update vendor interaction</mat-card-title>
-            <mat-card-subtitle>Selected vendor: {{selectedVendorDetailsJson.name}}</mat-card-subtitle>
+            <mat-card-title>{{ 'RecieveBulk.UpdateInteraction' | translate }}</mat-card-title>
+            <mat-card-subtitle>{{ 'RecieveBulk.SelectedVendor' | translate }}: {{selectedVendorDetailsJson.name}}</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content >
             <form [formGroup]="bulkTypesForm">
                 <mat-form-field>
-                    <input matInput  [min]="minDate" [max]="maxDate" [matDatepicker]="datepicker" placeholder="Register Date" [formControl]="registerDate">
+                    <input matInput  [min]="minDate" [max]="maxDate" [matDatepicker]="datepicker" placeholder="{{ 'RecieveBulk.RegisterDate' | translate }}" [formControl]="registerDate">
                     <mat-datepicker-toggle matSuffix [for]="datepicker"></mat-datepicker-toggle>
                     <mat-datepicker touchUi="true" #datepicker></mat-datepicker>
                 </mat-form-field>
                 <mat-radio-group>
-                    <mat-radio-button value="N" (change)="setEmptyBulk(false)">No materials from vendor this time.</mat-radio-button><br>
-                    <mat-radio-button value="Y" (change)="setEmptyBulk(true)">Register material received</mat-radio-button>
+                    <mat-radio-button value="N" (change)="setEmptyBulk(false)">{{ 'RecieveBulk.NoMaterials' | translate }}</mat-radio-button><br>
+                    <mat-radio-button value="Y" (change)="setEmptyBulk(true)">{{ 'RecieveBulk.RegisterMaterials' | translate }}</mat-radio-button>
                 </mat-radio-group>
                 <div *ngIf="!bulkIsEmpty" formArrayName="bulkTypes">
                     <div *ngFor="let bulkTypes of bulkTypes().controls; let bulkTypesIndex=index">
                         <div class="selectPoline" [formGroupName]='bulkTypesIndex'>
                             <mat-form-field appearance="fill" class="bulkTypeInput" floatLabel="never">
-                                <input matInput placeholder="Enter number" formControlName="input" >
-                                <mat-error *ngIf="hasError('input')">Only numbers allowed</mat-error>
+                                <input matInput placeholder="{{ 'RecieveBulk.Placeholder' | translate }}" formControlName="input" >
+                                <mat-error *ngIf="hasError('input')">{{ 'RecieveBulk.OnlyNumbers' | translate }}Only numbers allowed</mat-error>
                             </mat-form-field>
                             <label>{{ bulkTypes.get('name').value| truncate : 40 }}</label>
                             <!--                            <mat-radio-button (change)="vendorSelected(bulkTypesIndex)" value="{{bulkTypes.get('code').value}}">{{ bulkTypes.get('name').value| truncate : 40 }}</mat-radio-button>-->
@@ -87,7 +80,7 @@
             </form>
         </mat-card-content>
         <mat-card-actions>
-            <button mat-raised-button color="primary" (click)="registrer()">Save</button>
+            <button mat-raised-button color="primary" (click)="registrer()">{{ 'Save' | translate }}</button>
         </mat-card-actions>
     </mat-card>
 </section>

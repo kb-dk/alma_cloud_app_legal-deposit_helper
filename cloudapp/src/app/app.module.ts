@@ -15,7 +15,6 @@ import {ReplaceVendorComponent} from "./replaceVendor/replace-vendor.component";
 import { SettingsComponent } from './settings/settings.component';
 import {CancelPolineComponent} from "./cancelPoline/cancelPoline.component";
 import { ReceiveBulkComponent } from './receive-bulk/receive-bulk.component';
-import { TranslateComponent } from './translate/translate.component';
 import {TranslateModule} from "@ngx-translate/core";
 
 
@@ -29,7 +28,6 @@ import {TranslateModule} from "@ngx-translate/core";
     CancelPolineComponent,
     SettingsComponent,
     ReceiveBulkComponent,
-    TranslateComponent,
   ],
   imports: [
     MaterialModule,

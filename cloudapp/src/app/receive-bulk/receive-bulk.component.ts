@@ -51,8 +51,8 @@ export class ReceiveBulkComponent implements OnInit {
       this.settings = settings as Settings;
       this.translate.use(this.settings.language).subscribe(()=> {
       this.initBulktypes();
-      this.appService.setTitle(this.translate.instant('Title.RecieveBulk'));
-      this.noVendorsFoundText = this.translate.instant('RecieveBulk.NoVendorsFoundText');
+      this.appService.setTitle(this.translate.instant('Title.ReceiveBulk'));
+      this.noVendorsFoundText = this.translate.instant('ReceiveBulk.NoVendorsFoundText');
       });
     });
     this.initVendors();
@@ -264,7 +264,7 @@ export class ReceiveBulkComponent implements OnInit {
 
     var newNote: String = '';
     if (this.bulkIsEmpty) {
-      newNote = this.translate.instant('RecieveBulk.NoDeliveryRecived')+ ' ' + formatDateForNote();
+      newNote = this.translate.instant('ReceiveBulk.NoDeliveryRecived')+ ' ' + formatDateForNote();
     } else {
       newNote = this.translate.instant('ReceiveBulk.BulkReceived') + ' ' + formatDateForNote() + ':';
       this.bulkTypes().controls.forEach(control => {

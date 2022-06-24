@@ -4,7 +4,7 @@ import {MainComponent} from './main/main.component';
 import {ReplaceVendorComponent} from "./replaceVendor/replace-vendor.component";
 import {SettingsComponent} from "./settings/settings.component";
 import {CancelPolineComponent} from "./cancelPoline/cancelPoline.component";
-import {ReceiveBulkComponent} from "./recieve-bulk/receive-bulk.component";
+import {ReceiveBulkComponent} from "./receive-bulk/receive-bulk.component";
 
 const routes: Routes = [
   { path: '', component: MainComponent },

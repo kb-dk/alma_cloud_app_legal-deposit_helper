@@ -1,0 +1,44 @@
+{
+	"Materialtype": {
+		"BOOKLET": "Booklet",
+		"BOOKLET_SHORT": "Booklet",
+		"BOX": "Box",
+		"BOX_SHORT": "Box",
+		"ENVELOPE": "Envelope",
+		"ENVELOPE_SHORT": "Envelope",
+		"PALLET": "Pallet",
+		"PALLET_SHORT": "Pallet",
+		"PARCEL": "Parcel",
+		"PARCEL_SHORT": "Parcel",
+		"PICK_UP_SHELF": "Pick up shelf",
+		"PICK_UP_SHELF_SHORT": "Pick up shelf",
+		"TUBE": "Tube",
+		"TUBE_SHORT": "Tube"
+	},
+	"ReceiveBulk": {
+		"BulkReceived": "Bulk received",
+		"BulkReceivedInfo": "Bulk received for vendor",
+		"FindVendor": "Find vendor",
+		"MoreThan1": "More than",
+		"MoreThan2": "vendors found! Consider altering your search criteria",
+		"NewSearch": "You can also make a new search",
+		"NoDeliveryRecived": "No delivery registred",
+		"NoMaterials": "No materials from vendor this time",
+		"NoVendorsFoundText": "No vendors found. Please change search criterion and try again",
+		"OnlyNumbers": "Only Numbers allowed",
+		"Placeholder": "Enter number",
+		"RegisterDate": "Register Date",
+		"RegisterMaterials": "Register material received",
+		"Search": "Search",
+		"SearchCriteria": "Search criteria",
+		"SelectVendor": "Please select a vendor",
+		"SelectedVendor": "Selected vendor",
+		"UpdateInteraction": "Update vendor interaction",
+		"VendorCodeFilter1": "Vendor code of search result is filtered with",
+		"VendorCodeFilter2": "This can be changed in 'Settings'"
+	},
+	"Save": "Save",
+	"Title": {
+		"ReceiveBulk": "Receive Material Bulk"
+	}
+}

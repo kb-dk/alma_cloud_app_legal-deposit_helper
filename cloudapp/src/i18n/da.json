@@ -1,0 +1,44 @@
+{
+	"Materialtype": {
+		"BOOKLET": "Hæfte",
+		"BOOKLET_SHORT": "hf",
+		"BOX": "Kasse",
+		"BOX_SHORT": "ks",
+		"ENVELOPE": "Kuvert",
+		"ENVELOPE_SHORT": "ku",
+		"PALLET": "Palle",
+		"PALLET_SHORT": "pl",
+		"PARCEL": "Pakke",
+		"PARCEL_SHORT": "pk",
+		"PICK_UP_SHELF": "Ventehylde",
+		"PICK_UP_SHELF_SHORT": "vh",
+		"TUBE": "Rør",
+		"TUBE_SHORT": "rø"
+	},
+	"ReceiveBulk": {
+		"BulkReceived": "Bunke modtaget",
+		"BulkReceivedInfo": "Bunke er modtaget for",
+		"FindVendor": "Find leverandør",
+		"MoreThan1": "Der blev fundet mere end ",
+		"MoreThan2": "leverandører! Du kan prøve at ændre din søgning.",
+		"NewSearch": "Du kan også lave en ny søgning.",
+		"NoDeliveryRecived": "Tom bunke modtaget",
+		"NoMaterials": "Modtag tom bunke",
+		"NoVendorsFoundText": "Der blev ikke fundet nogen leverandører. Du kan evt. ændre dine søgeord.",
+		"OnlyNumbers": "Indtalst et tal",
+		"Placeholder": "Indtast antal",
+		"RegisterDate": "Modtagelsesdato",
+		"RegisterMaterials": "Modtag bunke",
+		"Search": "Søg",
+		"SearchCriteria": "Indtast søgeord",
+		"SelectVendor": "Vælg en leverandør",
+		"SelectedVendor": "Valgt leverandør",
+		"UpdateInteraction": "Opdater 'modtagelse' fra leverandør",
+		"VendorCodeFilter1": "Søgeresultatets vendor code er filteret med",
+		"VendorCodeFilter2": "Du kan ændre dette i 'Settings'"
+	},
+	"Save": "Gem",
+	"Title": {
+		"ReceiveBulk": "Modtag bunke"
+	}
+}

@@ -37,12 +37,12 @@ export class ReceiveBulkComponent implements OnInit {
   registerDate: FormControl;
 
   constructor(
-    private appService: AppService,
-    private restService: CloudAppRestService,
-    private formBuilder: FormBuilder,
-    private alert: AlertService,
-    private translate: TranslateService,
-    private settingsService: CloudAppSettingsService,
+      private appService: AppService,
+      private restService: CloudAppRestService,
+      private formBuilder: FormBuilder,
+      private alert: AlertService,
+      private translate: TranslateService,
+      private settingsService: CloudAppSettingsService,
   ) {
   }
 
@@ -50,9 +50,9 @@ export class ReceiveBulkComponent implements OnInit {
     this.settingsService.get().subscribe((settings)=>{
       this.settings = settings as Settings;
       this.translate.use(this.settings.language).subscribe(()=> {
-      this.initBulktypes();
-      this.appService.setTitle(this.translate.instant('Title.ReceiveBulk'));
-      this.noVendorsFoundText = this.translate.instant('ReceiveBulk.NoVendorsFoundText');
+        this.initBulktypes();
+        this.appService.setTitle(this.translate.instant('Title.ReceiveBulk'));
+        this.noVendorsFoundText = this.translate.instant('ReceiveBulk.NoVendorsFoundText');
       });
     });
     this.initVendors();
@@ -79,18 +79,19 @@ export class ReceiveBulkComponent implements OnInit {
     this.pageLoading = true;
     this.vendorSearchString = vendorNameSearchString;
     this.vendorSearchLimitExceeded = false;
-    this.searchVendors(vendorNameSearchString);
+    const vendorCodeFilter = this.settings.vendorCodeFilter;
+    const queryParamString= "all~"+vendorNameSearchString + ' ' + vendorCodeFilter;
+    this.searchVendors(queryParamString);
   }
 
-  private searchVendors(vendorNameSearchString: string) {
+  private searchVendors(queryParamString: string) {
     this.vendorsFound = false;
     let url = "/acq/vendors/";
-    let queryParamValue= "name~"+vendorNameSearchString;
     var request: Request = {
       url: url,
       method: HttpMethod.GET,
       queryParams: {
-        ["q"]: queryParamValue,
+        ["q"]: queryParamString,
         ["limit"]: 100
       }
     };
@@ -99,19 +100,18 @@ export class ReceiveBulkComponent implements OnInit {
         this.initVendors();
         this.showSearchVendorResult = true;
         const total_record_count = parseInt(result.total_record_count)
-        const vendorCodeFilter = this.settings.vendorCodeFilter;
         if(total_record_count > 0){
           let foundVendorsCounter = 0;
           for (let i = 0; i < result.vendor.length; i++) {
             const tmpVendorCode = result.vendor[i].code;
-            if(((!vendorCodeFilter||vendorCodeFilter.length===0) || tmpVendorCode.toLowerCase().includes(vendorCodeFilter.toLowerCase())) && this.vendors().controls.length < this.settings.vendorSearchLimit){
+            if(this.vendors().controls.length < this.settings.vendorSearchLimit){
               this.vendors().push(this.newVendor(tmpVendorCode, result.vendor[i].name, result.vendor[i].link));
               this.vendorsFound = true;
               foundVendorsCounter++;
             }
           }
         }
-        if(vendorCodeFilter && this.vendorsFound) {
+        if(this.vendorsFound) {
           if(this.vendors().controls.length >= this.settings.vendorSearchLimit){
             this.vendorSearchLimitExceeded = true;
           }
@@ -120,11 +120,9 @@ export class ReceiveBulkComponent implements OnInit {
             this.vendorSearchLimitExceeded = true;
           }
         }
-        if(!this.vendorsFound){
-        }
       },
       error: (e: RestErrorResponse) => {
-        this.alert.error('Failed to get data from search: ' + vendorNameSearchString);
+        this.alert.error('Failed to get data from search: ' + queryParamString);
         console.error(e);
         this.pageLoading = false;
       },

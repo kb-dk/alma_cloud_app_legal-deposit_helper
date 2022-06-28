@@ -7,18 +7,21 @@
 
 
 <section *ngIf="showSearchVendor">
-    <mat-card class="input-card">
-        <mat-card-header>
-            <mat-card-title>{{ 'ReceiveBulk.FindVendor' | translate }}</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-            <mat-label>{{ 'ReceiveBulk.SearchCriteria' | translate }}:</mat-label>
-            <input matInput class="searchInput" #searchInput [value]="vendorSearchString" (submit)="search(searchInput.value)">
-        </mat-card-content>
-        <mat-card-actions>
-            <button mat-raised-button color="primary" (click)="search(searchInput.value)">{{ 'ReceiveBulk.Search' | translate }}</button>
-        </mat-card-actions>
-    </mat-card>
+    <form>
+        <mat-card class="input-card">
+            <mat-card-header>
+                <mat-card-title>{{ 'ReceiveBulk.FindVendor' | translate }}</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <mat-label>{{ 'ReceiveBulk.SearchCriteria' | translate }}:</mat-label>
+
+                <input matInput class="searchInput" #searchInput [value]="vendorSearchString" (submit)="search(searchInput.value)">
+            </mat-card-content>
+            <mat-card-actions>
+                <button mat-raised-button color="primary" type="submit" (click)="search(searchInput.value)">{{ 'ReceiveBulk.Search' | translate }}</button>
+            </mat-card-actions>
+        </mat-card>
+    </form>
 </section>
 <br>
 
@@ -31,7 +34,7 @@
             </ng-template>
         </mat-card-header>
         <mat-card-subtitle *ngIf="vendorSearchLimitExceeded" class="bold-weight"><b>{{ 'ReceiveBulk.MoreThan1' | translate }} {{settings.vendorSearchLimit}} {{ 'ReceiveBulk.MoreThan2' | translate }}.</b></mat-card-subtitle>
-        <mat-card-subtitle *ngIf="(this.settings.vendorCodeFilter && this.settings.vendorCodeFilter.length > 0)">{{ 'ReceiveBulk.VendorCodeFilter1' | translate }} '<b class="bold-weight">{{settings.vendorCodeFilter}}</b>'. {{ 'ReceiveBulk.VendorCodeFilter2' | translate }}.</mat-card-subtitle>
+        <mat-card-subtitle *ngIf="(this.settings.vendorCodeFilter && this.settings.vendorCodeFilter.length > 0)">{{ 'ReceiveBulk.VendorCodeFilter1' | translate }} '<b class="bold-weight">{{settings.vendorCodeFilter}}</b>' {{ 'ReceiveBulk.VendorCodeFilter2' | translate }} {{settings.vendorSearchLimit}} {{ 'ReceiveBulk.VendorCodeFilter3' | translate }}.</mat-card-subtitle>
         <mat-card-content *ngIf="vendors().controls.length>0">
             <form [formGroup]="vendorsForm">
                 <div formArrayName="vendors">

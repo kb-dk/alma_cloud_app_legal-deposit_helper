@@ -34,8 +34,9 @@
 		"SelectVendor": "Vælg en leverandør",
 		"SelectedVendor": "Valgt leverandør",
 		"UpdateInteraction": "Opdater 'modtagelse' fra leverandør",
-		"VendorCodeFilter1": "Søgeresultatets vendor code er filteret med",
-		"VendorCodeFilter2": "Du kan ændre dette i 'Settings'"
+		"VendorCodeFilter1": "Søgeresultatets vendor code er filtreret med",
+		"VendorCodeFilter2": " og begrænset til ",
+		"VendorCodeFilter3": "stk. Du kan ændre dette i 'Settings'"
 	},
 	"Save": "Gem",
 	"Title": {

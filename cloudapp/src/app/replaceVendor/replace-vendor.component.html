@@ -48,19 +48,21 @@
 
         <div *ngIf="selectedPoLine">
             <section>
-                <mat-card class="input-card">
-                    <h3>Selected PO Line: <b>{{selectedPoLine.description | truncate: 30}}</b></h3>
-                    <mat-card-header>
-                        <mat-card-title>Click 'Search' (Change search criteria if necessary)</mat-card-title>
-                    </mat-card-header>
-                    <mat-card-content>
-                        <mat-label>Search criteria: </mat-label>
-                        <input matInput #searchInput [value]="vendorSearchString" (submit)="search(searchInput.value)">
-                    </mat-card-content>
-                    <mat-card-actions>
-                        <button mat-raised-button color="primary" (click)="search(searchInput.value)">Search</button>
-                    </mat-card-actions>
-                </mat-card>
+                <form>
+                    <mat-card class="input-card">
+                        <h3>Selected PO Line: <b>{{selectedPoLine.description | truncate: 30}}</b></h3>
+                        <mat-card-header>
+                            <mat-card-title>Click 'Search' (Change search criteria if necessary)</mat-card-title>
+                        </mat-card-header>
+                        <mat-card-content>
+                            <mat-label>Search criteria: </mat-label>
+                            <input foc matInput #searchInput [value]="vendorSearchString" (submit)="search(searchInput.value)">
+                        </mat-card-content>
+                        <mat-card-actions>
+                            <button mat-raised-button type="submit" color="primary" (click)="search(searchInput.value)">Search</button>
+                        </mat-card-actions>
+                    </mat-card>
+                </form>
             </section>
         </div>
 

@@ -35,7 +35,8 @@
 		"SelectedVendor": "Selected vendor",
 		"UpdateInteraction": "Update vendor interaction",
 		"VendorCodeFilter1": "Vendor code of search result is filtered with",
-		"VendorCodeFilter2": "This can be changed in 'Settings'"
+		"VendorCodeFilter2": " and limited to a number of ",
+		"VendorCodeFilter3": ". This can be changed in 'Settings'"
 	},
 	"Save": "Save",
 	"Title": {

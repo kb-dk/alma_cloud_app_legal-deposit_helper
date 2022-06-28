@@ -201,41 +201,40 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
 
   search(vendorNameSearchString: string) {
     this.pageLoading = true;
-    this.vendorSearchString = vendorNameSearchString;
-    this.showSearchVendorResult = true;
     this.vendorSearchLimitExceeded = false;
-    this.searchVendors(vendorNameSearchString);
+    this.showSearchVendorResult = true;
+    const vendorCodeFilter = this.settings.vendorCodeFilter;
+    const queryParamString= "all~"+vendorNameSearchString + ' ' + vendorCodeFilter;
+    this.searchVendors(queryParamString);
   }
 
-  private searchVendors(vendorNameSearchString: string) {
+  private searchVendors(queryParamString: string) {
     this.vendorsFound = false;
     let url = "/acq/vendors/";
-    let queryParamValue= "name~"+vendorNameSearchString;
     var request: Request = {
       url: url,
       method: HttpMethod.GET,
       queryParams: {
-        ["q"]: queryParamValue,
+        ["q"]: queryParamString,
         ["limit"]: 100
       }
     };
     this.restService.call(request).subscribe({
       next: result => {
         this.initVendors();
-        const total_record_count = parseInt(result.total_record_count)
-        const vendorCodeFilter = this.settings.vendorCodeFilter;
+        const total_record_count = parseInt(result.total_record_count);
         if(total_record_count > 0){
           let foundVendorsCounter = 0;
           for (let i = 0; i < result.vendor.length; i++) {
             const tmpVendorCode = result.vendor[i].code;
-            if(((!vendorCodeFilter||vendorCodeFilter.length===0) || tmpVendorCode.toLowerCase().includes(vendorCodeFilter.toLowerCase())) && this.vendors().controls.length < this.settings.vendorSearchLimit){
+            if(this.vendors().controls.length < this.settings.vendorSearchLimit){
               this.vendors().push(this.newVendor(tmpVendorCode, result.vendor[i].name, result.vendor[i].link));
               this.vendorsFound = true;
               foundVendorsCounter++;
             }
           }
         }
-        if(vendorCodeFilter && this.vendorsFound) {
+        if(this.vendorsFound) {
           if(this.vendors().controls.length >= this.settings.vendorSearchLimit){
             this.vendorSearchLimitExceeded = true;
           }
@@ -246,7 +245,7 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
         }
       },
       error: (e: RestErrorResponse) => {
-        this.alert.error('Failed to get data from search: ' + vendorNameSearchString);
+        this.alert.error('Failed to get data from search: ' + queryParamString);
         console.error(e);
         this.pageLoading = false;
       },

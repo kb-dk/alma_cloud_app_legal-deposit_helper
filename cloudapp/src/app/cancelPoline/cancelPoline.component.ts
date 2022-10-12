@@ -62,7 +62,15 @@ export class CancelPolineComponent implements OnInit {
 
   onPageLoad = (pageInfo: PageInfo) => {
     this.pageEntities = pageInfo.entities;
+    this.deletedOK = [];
+    this.deletedError = []
+    this.clearPolinesFromFormArrays();
     this.loadPolineDetails();
+  }
+
+  clearPolinesFromFormArrays() {
+    this.allPolines().clear();
+    this.deletePolines().clear();
   }
 
   loadPolineDetails() {
@@ -126,7 +134,7 @@ export class CancelPolineComponent implements OnInit {
     var deleteRequest: Request = {
       url: url,
       method: HttpMethod.DELETE,
-      queryParams: {["reason"]: "LIBRARY_CANCELLED"}
+      queryParams: {["reason"]: "LIBRARY_CANCELLED", ["override"]: "true"}
     };
     this.restService.call(deleteRequest).subscribe({
       next: () => {
@@ -208,25 +216,8 @@ export class CancelPolineComponent implements OnInit {
   }
 
   clear(){
-    this.deletedOK = [];
-    this.deletedError = []
-    this.refresh();
+    this.pageLoad$ = this.eventsService.onPageLoad(this.onPageLoad);
   }
 
-  refresh(){
-    this.eventsService.refreshPage().subscribe({
-      next: () => {
-        this.alert.success('Success!')
-      },
-      error: e => {
-        console.error(e);
-        this.alert.error('Failed to refresh page');
-      },
-      complete: () =>{
-        this.ngOnInit()
-      }
-    });
-
-  }
 }
 

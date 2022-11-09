@@ -216,6 +216,7 @@ export class ReplaceVendorComponent implements OnInit, OnDestroy {
       method: HttpMethod.GET,
       queryParams: {
         ["q"]: queryParamString,
+        ["status"]: "active",
         ["limit"]: 100
       }
     };

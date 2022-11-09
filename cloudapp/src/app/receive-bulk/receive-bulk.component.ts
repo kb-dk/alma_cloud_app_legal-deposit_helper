@@ -92,6 +92,7 @@ export class ReceiveBulkComponent implements OnInit {
       method: HttpMethod.GET,
       queryParams: {
         ["q"]: queryParamString,
+        ["status"]: "active",
         ["limit"]: 100
       }
     };
